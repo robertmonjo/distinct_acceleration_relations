@@ -49,13 +49,20 @@ state of the previous one.
 
 ## Scripts, figures and tables
 
-| Script | Paper output | File(s) in `outputs/` |
+Output filenames follow the **published article numbering** (continuous: Figures 1, 2, 4, 5;
+Figure 3 is a conceptual scheme not produced from data). Anything not appearing in the article
+is written with a `Suppl_` prefix.
+
+| Script | Article item | File(s) in `outputs/` |
 |--------|--------------|-----------------------|
-| `Fig1.R`  | Figure 1  — cluster radial acceleration relation | `Fig01_cluster_RAR.pdf` |
-| `Fig2.R`  | Figure 2  — galaxies vs. clusters | `Fig02_cluster_vs_galaxies.pdf` |
-| `FigC2.R` | Figure C2 — fitting of the RAR | `FigC2_fitting_RAR.pdf` |
-| `FigC3.R` | Figure C3 + tables | `FigC3_fitting_and_relations.pdf`, `table_cluster_RAR_B.txt`, `table_cluster_RAR_B2.txt`, `table_cluster_RAR_C.txt` |
-| `01_galaxy_parameters.R` | intermediate galaxy fits | `Fig00_galaxies_parameters.txt` and `Fig00*` diagnostics |
+| `Fig1.R`  | Figure 1 — cluster radial acceleration relation | `Fig1.pdf` |
+| `Fig2.R`  | Figure 2 — galaxies vs. clusters | `Fig2.pdf` |
+| `FigC2.R` | Figure 4 — fitting of the RAR | `Fig4.pdf` |
+| `FigC3.R` | Figure 5 + Table 1 | `Fig5.pdf`, `Table1_general_model.txt`, `Table1_cluster_model.txt`, `Suppl_table_general_model_variant.txt` |
+| `01_galaxy_parameters.R` | supplementary galaxy diagnostics | `Suppl_data_galaxy_parameters.txt`, `Suppl_fig_galaxies.pdf`, `Suppl_fig_rotation_curves.pdf`, `Suppl_fig_interpolation.pdf` |
+
+Table 1 in the article combines the one-parameter *general model* (`Table1_general_model.txt`)
+and the two-parameter *cluster model* (`Table1_cluster_model.txt`).
 
 ## Data provenance
 

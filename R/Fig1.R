@@ -1,6 +1,6 @@
 # Monjo & Banik (2025), ApJ 992, 35 — reproducible pipeline
 # Sourced in order by run_all.R (shared session state).
-# Figure 1: cluster radial acceleration relation. -> outputs/Fig01_cluster_RAR.pdf
+# Figure 1: cluster radial acceleration relation. -> outputs/Fig1.pdf
 
 
 
@@ -107,7 +107,7 @@ gamma_0mdo2 = apply(gamma_0mdd2_seq,1,quantile,0.1)
   eps0 = mean(eps_clusC[,1])
   eps0 = quantile(c(eps_clusB[,1]), 0.5, na.rm=TRUE)
   
-  pdf(paste0("outputs/Fig01_cluster_RAR.pdf"), width = 10, height = 5.05)
+  pdf(paste0("outputs/Fig1.pdf"), width = 10, height = 5.05)
   {
     cex0 = 1.5
     gamma_00 = gamma_01

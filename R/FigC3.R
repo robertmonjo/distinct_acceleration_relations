@@ -1,6 +1,6 @@
 # Monjo & Banik (2025), ApJ 992, 35 — reproducible pipeline
 # Sourced in order by run_all.R (shared session state).
-# Figure C3 + cluster tables. -> outputs/FigC3_fitting_and_relations.pdf, outputs/table_cluster_RAR_*.txt
+# Figure C3 + cluster tables. -> outputs/Fig5.pdf, outputs/table_cluster_RAR_*.txt
 
 
 
@@ -44,20 +44,20 @@ for(iclu in 1:10)
 table_clusB = cbind(eps_clusB,
                     round(pchisq(apply(clus_xi2B[, ],1,min),rar.num-1),2))
 colnames(table_clusB) = c("eps_med","eps_low","eps_upp","p_value")
-write.table(table_clusB, "outputs/table_cluster_RAR_B.txt", quote = FALSE)
+write.table(table_clusB, "outputs/Table1_general_model.txt", quote = FALSE)
 
 
 table_clusb = cbind(eps_clusb,
                     round(pchisq(apply(clus_xi2b[, ],1,min),rar.num-1),2))
 colnames(table_clusb) = c("eps_med","eps_low","eps_upp","p_value")
-write.table(table_clusb, "outputs/table_cluster_RAR_B2.txt", quote = FALSE)
+write.table(table_clusb, "outputs/Suppl_table_general_model_variant.txt", quote = FALSE)
 
 
 #### 2-parameter general model for clusters ####
 table_clusC = cbind(eps_clusC, round(gal_clusC,3),
                     round(pchisq(apply(clus_xi2C[, , ],1,min),rar.num-1),2))
 colnames(table_clusC) = c("eps_med","eps_low","eps_upp","ggal_med","ggal_low","ggal_upp","p_value")
-write.table(table_clusC, "outputs/table_cluster_RAR_C.txt", quote = FALSE)
+write.table(table_clusC, "outputs/Table1_cluster_model.txt", quote = FALSE)
 par(mfrow=c(1,1),oma=c(3,3,3,3))
 plot(clus_mass/clus_rad,1/eps_clusB[,1])
      
@@ -88,7 +88,7 @@ abline(0,1)
 
 {
   
-  pdf(paste0("outputs/FigC3_fitting_and_relations.pdf"), width = 7, height = 4.5)
+  pdf(paste0("outputs/Fig5.pdf"), width = 7, height = 4.5)
   {
 par(fig=c(0,0.48,0.1,1),oma=c(5.9,3,0.5,3),mar=c(0,0,0,0))
 

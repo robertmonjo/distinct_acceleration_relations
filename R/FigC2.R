@@ -1,6 +1,6 @@
 # Monjo & Banik (2025), ApJ 992, 35 — reproducible pipeline
 # Sourced in order by run_all.R (shared session state).
-# Figure C2: fitting of the radial acceleration relation. -> outputs/FigC2_fitting_RAR.pdf
+# Figure C2: fitting of the radial acceleration relation. -> outputs/Fig4.pdf
 
 
 
@@ -214,7 +214,7 @@ clus_ve = array(NA,dim=c(length(clusters),3), dimnames=list(clusters,c("med","lo
 clus_vH = array(NA,dim=c(length(clusters),3), dimnames=list(clusters,c("med","low","upp")))
 clus_vevH2 = array(NA,dim=c(length(clusters),3), dimnames=list(clusters,c("med","low","upp")))
 {
-  pdf("outputs/FigC2_fitting_RAR.pdf", width = 9, height = 5)
+  pdf("outputs/Fig4.pdf", width = 9, height = 5)
   {
     {
       par(mfrow=c(2,5), mar=c(0,0,0,0), oma=c(3.5,3.5,2,30.3))

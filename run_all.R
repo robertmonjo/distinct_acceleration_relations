@@ -7,6 +7,9 @@
 if (length(.file) == 1) setwd(dirname(normalizePath(.file)))
 dir.create("outputs", showWarnings = FALSE)
 
+# Send stray diagnostic screen plots to a null device; paper figures use explicit pdf() devices.
+pdf(NULL)
+
 source("R/00_setup.R")
 source("R/01_galaxy_parameters.R")
 source("R/FigC2.R")

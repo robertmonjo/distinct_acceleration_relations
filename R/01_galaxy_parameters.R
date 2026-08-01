@@ -1,9 +1,9 @@
 # Monjo & Banik (2025), ApJ 992, 35 — reproducible pipeline
 # Sourced in order by run_all.R (shared session state).
-# Stage 1: galaxy epsilon fits; writes outputs/Fig00_galaxies_parameters.txt.
+# Stage 1: galaxy epsilon fits; writes outputs/Suppl_data_galaxy_parameters.txt.
 
 {
-  pdf(paste0("outputs/Fig00_galaxies.pdf"), width = 7, height = 7)
+  pdf(paste0("outputs/Suppl_fig_galaxies.pdf"), width = 7, height = 7)
   
   {
     
@@ -104,7 +104,7 @@ dev.off()
 galeps_0 = galeps_0.48
 rapid =
 data.frame(Name=names(namesg)[-58],mod1_eps=galeps_0[-58], mod2_eps=galeps_k[-58], mod2_gam=gammagc_k[-58]/pi)
-write.table(rapid, row.names=FALSE, sep="\t", file = paste0("outputs/Fig00_galaxies_parameters.txt"),quote=FALSE)
+write.table(rapid, row.names=FALSE, sep="\t", file = paste0("outputs/Suppl_data_galaxy_parameters.txt"),quote=FALSE)
 
 
 plot(sqrt(smcGa07.mass/(4/3*pi*(smcGa07.R$x*kpc)^3)/(3/(8*pi*GN*T0^2)))/8,galeps_0)
@@ -115,7 +115,7 @@ abline(0,1)
 
 #### Fig00B_galaxies.pdf (rotation curves) ####
 {
-  pdf(paste0("outputs/Fig00_rotation_curves.pdf"), width = 7, height = 7)
+  pdf(paste0("outputs/Suppl_fig_rotation_curves.pdf"), width = 7, height = 7)
   
   {
     par(mfrow=c(10,6),mar=c(0,0,0,0),oma=c(5,4,3,4))
@@ -217,7 +217,7 @@ abline(0,1)
 
 #### Fig00C_interpolation.pdf (accel) ####
 {
-  pdf(paste0("outputs/Fig00C_interpolation.pdf"), width = 7, height = 7)
+  pdf(paste0("outputs/Suppl_fig_interpolation.pdf"), width = 7, height = 7)
   
   {
     par(mfrow=c(10,6),mar=c(0,0,0,0),oma=c(5,4,3,4))

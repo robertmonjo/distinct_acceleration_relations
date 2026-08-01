@@ -1,6 +1,6 @@
 # Monjo & Banik (2025), ApJ 992, 35 — reproducible pipeline
 # Sourced in order by run_all.R (shared session state).
-# Figure 2: distinct acceleration relations of galaxies and galaxy clusters. -> outputs/Fig02_cluster_vs_galaxies.pdf
+# Figure 2: distinct acceleration relations of galaxies and galaxy clusters. -> outputs/Fig2.pdf
 
 
 
@@ -46,7 +46,7 @@ abline(0,1)
 
 ### RAR Figure02 (Galaxies) ####
 {
-  pdf(paste0("outputs/Fig02_cluster_vs_galaxies.pdf"), width = 7, height = 8.1)
+  pdf(paste0("outputs/Fig2.pdf"), width = 7, height = 8.1)
   {
     
     ##### PART A #####
