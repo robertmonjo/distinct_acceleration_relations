@@ -1,0 +1,10 @@
+# Generated outputs (reproducible via run_all.R)
+outputs/*
+!outputs/.gitkeep
+
+# R session artifacts
+Rplots.pdf
+.Rhistory
+.RData
+.Rproj.user/
+*_run.log
