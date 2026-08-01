@@ -57,8 +57,8 @@ is written with a `Suppl_` prefix.
 |--------|--------------|-----------------------|
 | `Fig1.R`  | Figure 1 — cluster radial acceleration relation | `Fig1.pdf` |
 | `Fig2.R`  | Figure 2 — galaxies vs. clusters | `Fig2.pdf` |
-| `FigC2.R` | Figure 4 — fitting of the RAR | `Fig4.pdf` |
-| `FigC3.R` | Figure 5 + Table 1 | `Fig5.pdf`, `Table1_general_model.txt`, `Table1_cluster_model.txt`, `Suppl_table_general_model_variant.txt` |
+| `Fig4.R` | Figure 4 — fitting of the RAR | `Fig4.pdf` |
+| `Fig5.R` | Figure 5 + Table 1 | `Fig5.pdf`, `Table1_general_model.txt`, `Table1_cluster_model.txt`, `Suppl_table_general_model_variant.txt` |
 | `01_galaxy_parameters.R` | supplementary galaxy diagnostics | `Suppl_data_galaxy_parameters.txt`, `Suppl_fig_galaxies.pdf`, `Suppl_fig_rotation_curves.pdf`, `Suppl_fig_interpolation.pdf` |
 
 Table 1 in the article combines the one-parameter *general model* (`Table1_general_model.txt`)

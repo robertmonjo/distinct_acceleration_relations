@@ -10,10 +10,11 @@ dir.create("outputs", showWarnings = FALSE)
 # Send stray diagnostic screen plots to a null device; paper figures use explicit pdf() devices.
 pdf(NULL)
 
+# Sourced in computation-dependency order (not figure order): Fig4/Fig5 (RAR fits) precede Fig1/Fig2 by data dependency.
 source("R/00_setup.R")
 source("R/01_galaxy_parameters.R")
-source("R/FigC2.R")
-source("R/FigC3.R")
+source("R/Fig4.R")
+source("R/Fig5.R")
 source("R/Fig1.R")
 source("R/Fig2.R")
 
