@@ -77,11 +77,13 @@ gal_tab <- data.frame(
   model = c("HMG eps_H set by density (s=4)", "HMG eps_H fitted per galaxy",
             "MOND (a0 fixed = 1.2e-10)"),
   fitted_params = c(0, used, 0),
-  k = c(1, used, 0),
+  k = c(0, used, 0),                                     # s=4, gamma_cen fixed a priori: no fitted parameter
   chi2 = round(c(chi2A, chi2B, chi2M)),
-  chi2_nu = round(c(chi2A/(N-1), chi2B/(N-used), chi2M/N), 2),
-  BIC = round(c(bicC(chi2A,1), bicC(chi2B,used), bicC(chi2M,0))),
-  BIC_prof = round(c(bicP(ssrA,1), bicP(ssrB,used), bicP(ssrM,0))))
+  chi2_nu = round(c(chi2A/N, chi2B/(N-used), chi2M/N), 2),
+  p_value = signif(c(pchisq(chi2A,N,lower.tail=FALSE), pchisq(chi2B,N-used,lower.tail=FALSE),
+                     pchisq(chi2M,N,lower.tail=FALSE)), 2),
+  BIC = round(c(bicC(chi2A,0), bicC(chi2B,used), bicC(chi2M,0))),
+  BIC_prof = round(c(bicP(ssrA,0), bicP(ssrB,used), bicP(ssrM,0))))
 gal_tab$dBIC      <- round(gal_tab$BIC - gal_tab$BIC[3])
 gal_tab$dBIC_prof <- round(gal_tab$BIC_prof - gal_tab$BIC_prof[3])
 r_pred_fit <- cor(epsH_closed, epsB, use = "complete.obs")
@@ -115,8 +117,10 @@ clu_tab <- data.frame(cluster = clusters, eps_fit = round(eps_fit,1),
 
 # --- Report -------------------------------------------------------------------
 sink("outputs/Suppl_bayesian_comparison.txt")
-cat("Parameter economy of the HMG general model\n")
-cat("eps_H^2 = rho_nei(s)/rho_vac + 1/6   (Monjo 2026, MNRAS 549, Eq. 4)\n\n")
+cat("Bayesian comparison of HMG and MOND on galaxy rotation curves\n")
+cat("eps_H^2 = rho_nei(s)/rho_vac + 1/6   (Monjo 2026, MNRAS 549, Eq. 4)\n")
+cat("HMG set-by-density and MOND have no fitted parameter (k=0); s=4 and gamma_cen are fixed.\n")
+cat("61 galaxies with finite McGaugh parameters (3 single-point); main text quotes 60 (drops UGC 6923).\n\n")
 cat(sprintf("GALAXIES  (McGaugh 2007: %d galaxies, %d rotation-curve points)\n", used, N))
 cat(sprintf("chi2: sigma_V = sqrt((%.3f Vobs)^2 + %.1f^2) km/s [SPARC, Lelli+2016], BIC = chi2 + k lnN\n", FRAC, FLOOR))
 cat("BIC_prof: profiled-variance BIC = N ln(SSR_lnV/N) + k lnN (no error model assumed)\n\n")
