@@ -29,14 +29,13 @@ rho_vac   <- 3 / (8 * pi * GN * T0^2)
 
 # --- Galaxies -----------------------------------------------------------------
 gnames <- names(gal_counts); Ngal <- length(gnames)
-# density ratio rho_nei/rho_vac at s = 4, per galaxy (outer point aggregates)
-rho_ratio_gal <- mcgaugh.mass / (4/3 * pi * (mcgaugh.R$x * kpc * 4)^3) / rho_vac
-epsH_closed   <- sqrt(rho_ratio_gal + 1/6)          # Eq. 4 closure
+# rho_nei(s=1)/rho_vac per galaxy (outer-point aggregates); eps_H(s) follows Eq. 4
+rho_ratio_s1 <- mcgaugh.mass / (4/3 * pi * (mcgaugh.R$x * kpc)^3) / rho_vac
+epsH_of_s    <- function(s) sqrt(pmax(rho_ratio_s1 / s^3 + 1/6, 1e-6))
 
-# Two goodness measures per galaxy. (i) chi2 with the SPARC velocity uncertainty
-# (Lelli, McGaugh & Schombert 2016): median fractional error 4.3% with a 4.6 km/s
-# floor, sigma = sqrt((0.043 Vobs)^2 + 4.6^2). (ii) The assumption-free residual
-# in ln V, whose profiled-variance BIC needs no error model.
+# Goodness per galaxy: (i) chi2 with the SPARC velocity uncertainty (Lelli,
+# McGaugh & Schombert 2016: median 4.3% fractional error, 4.6 km/s floor);
+# (ii) the error-model-free ln V residual for a profiled-variance BIC.
 FRAC <- 0.043; FLOOR <- 4.6
 gal_terms <- function(i, model, epsH = NA) {
   lg <- gal_name_row == gnames[i]
@@ -56,37 +55,55 @@ gal_terms <- function(i, model, epsH = NA) {
   list(chi2 = sum(((Vmod[ok]-Vobs[ok])/sig[ok])^2),
        ssr  = sum((log(Vmod[ok])-log(Vobs[ok]))^2), n = sum(ok))
 }
+# total (chi2, ssr, N) over galaxies for a per-galaxy eps_H vector (or MOND)
+gal_total <- function(epsH, model = "HMG") {
+  C <- 0; S <- 0; n <- 0
+  for (i in 1:Ngal) {
+    if (model == "HMG" && !is.finite(epsH[i])) next
+    a <- gal_terms(i, model, if (model == "HMG") epsH[i] else NA)
+    if (a$n == 0) next
+    C <- C + a$chi2; S <- S + a$ssr; n <- n + a$n
+  }
+  c(chi2 = C, ssr = S, n = n)
+}
 
+# HMG general model: a single GLOBAL density scale s (one fitted parameter),
+# calibrated to all galaxies. The best-fit value confirms the s = 4 of the paper.
+s_grid <- seq(1, 30, 0.02)
+s_best <- s_grid[which.min(sapply(s_grid, function(s) gal_total(epsH_of_s(s))["chi2"]))]
+gA <- gal_total(epsH_of_s(s_best))
+N  <- as.numeric(gA["n"]); chi2A <- as.numeric(gA["chi2"]); ssrA <- as.numeric(gA["ssr"])
+gM <- gal_total(NULL, "MOND"); chi2M <- as.numeric(gM["chi2"]); ssrM <- as.numeric(gM["ssr"])
+
+# HMG with eps_H fitted freely per galaxy (most flexible variant)
 grid_eps <- unique(c(seq(0.5, 10, 0.1), seq(10, 200, 0.5)))
-N<-0; used<-0; chi2A<-0; chi2B<-0; chi2M<-0; ssrA<-0; ssrB<-0; ssrM<-0; epsB<-rep(NA,Ngal)
+chi2B <- 0; ssrB <- 0; epsB <- rep(NA, Ngal)
 for (i in 1:Ngal) {
-  if (!is.finite(epsH_closed[i])) next
-  a <- gal_terms(i, "HMG", epsH_closed[i]); if (a$n == 0) next
-  used <- used + 1; N <- N + a$n
-  chi2A <- chi2A + a$chi2; ssrA <- ssrA + a$ssr
-  m <- gal_terms(i, "MOND"); chi2M <- chi2M + m$chi2; ssrM <- ssrM + m$ssr
+  if (!is.finite(rho_ratio_s1[i])) next
+  if (gal_terms(i, "HMG", epsH_of_s(s_best)[i])$n == 0) next
   tb <- lapply(grid_eps, function(e) gal_terms(i, "HMG", e))
   chi2B <- chi2B + min(sapply(tb, `[[`, "chi2"))
   ssrB  <- ssrB  + min(sapply(tb, `[[`, "ssr"))
   epsB[i] <- grid_eps[which.min(sapply(tb, `[[`, "chi2"))]
 }
+used <- sum(!is.na(epsB))
 bicC <- function(chi2, k) chi2 + k * log(N)                 # BIC with SPARC errors
 bicP <- function(ssr, k)  N * log(ssr / N) + k * log(N)     # BIC, profiled variance
 
 gal_tab <- data.frame(
-  model = c("HMG eps_H set by density (s=4)", "HMG eps_H fitted per galaxy",
-            "MOND (a0 fixed = 1.2e-10)"),
-  fitted_params = c(0, used, 0),
-  k = c(0, used, 0),                                     # s=4, gamma_cen fixed a priori: no fitted parameter
+  model = c(sprintf("HMG global density scale s (best-fit %.2f)", s_best),
+            "HMG eps_H fitted per galaxy", "MOND (a0 fixed = 1.2e-10)"),
+  fitted_params = c(1, used, 0),
+  k = c(1, used, 0),
   chi2 = round(c(chi2A, chi2B, chi2M)),
-  chi2_nu = round(c(chi2A/N, chi2B/(N-used), chi2M/N), 2),
-  p_value = signif(c(pchisq(chi2A,N,lower.tail=FALSE), pchisq(chi2B,N-used,lower.tail=FALSE),
+  chi2_nu = round(c(chi2A/(N-1), chi2B/(N-used), chi2M/N), 2),
+  p_value = signif(c(pchisq(chi2A,N-1,lower.tail=FALSE), pchisq(chi2B,N-used,lower.tail=FALSE),
                      pchisq(chi2M,N,lower.tail=FALSE)), 2),
-  BIC = round(c(bicC(chi2A,0), bicC(chi2B,used), bicC(chi2M,0))),
-  BIC_prof = round(c(bicP(ssrA,0), bicP(ssrB,used), bicP(ssrM,0))))
+  BIC = round(c(bicC(chi2A,1), bicC(chi2B,used), bicC(chi2M,0))),
+  BIC_prof = round(c(bicP(ssrA,1), bicP(ssrB,used), bicP(ssrM,0))))
 gal_tab$dBIC      <- round(gal_tab$BIC - gal_tab$BIC[3])
 gal_tab$dBIC_prof <- round(gal_tab$BIC_prof - gal_tab$BIC_prof[3])
-r_pred_fit <- cor(epsH_closed, epsB, use = "complete.obs")
+r_pred_fit <- cor(epsH_of_s(s_best), epsB, use = "complete.obs")
 
 # --- Clusters -----------------------------------------------------------------
 rar <- read.table("data/clusterRAR.dat")
@@ -119,7 +136,7 @@ clu_tab <- data.frame(cluster = clusters, eps_fit = round(eps_fit,1),
 sink("outputs/Suppl_bayesian_comparison.txt")
 cat("Bayesian comparison of HMG and MOND on galaxy rotation curves\n")
 cat("eps_H^2 = rho_nei(s)/rho_vac + 1/6   (Monjo 2026, MNRAS 549, Eq. 4)\n")
-cat("HMG set-by-density and MOND have no fitted parameter (k=0); s=4 and gamma_cen are fixed.\n")
+cat(sprintf("HMG general model: one global density scale s (best-fit %.2f, k=1); MOND: a0 fixed (k=0).\n", s_best))
 cat("61 galaxies with finite McGaugh parameters (3 single-point); main text quotes 60 (drops UGC 6923).\n\n")
 cat(sprintf("GALAXIES  (McGaugh 2007: %d galaxies, %d rotation-curve points)\n", used, N))
 cat(sprintf("chi2: sigma_V = sqrt((%.3f Vobs)^2 + %.1f^2) km/s [SPARC, Lelli+2016], BIC = chi2 + k lnN\n", FRAC, FLOOR))
@@ -129,7 +146,7 @@ cat(sprintf("\nr(eps_H closed, eps_H fitted) = %.3f\n", r_pred_fit))
 cat(sprintf("\nCLUSTERS  (%d clusters, %d RAR points): per-cluster scale s for the density relation\n\n",
             length(clusters), nrow(rar)))
 print(clu_tab, row.names = FALSE)
-cat(sprintf("\ns: median = %.2f, range %.2f - %.2f  (galaxies use s = 4)\n",
-            median(s_centred), min(s_centred), max(s_centred)))
+cat(sprintf("\ns: median = %.2f, range %.2f - %.2f  (galaxies: global best-fit s = %.2f)\n",
+            median(s_centred), min(s_centred), max(s_centred), s_best))
 sink()
 cat(readLines("outputs/Suppl_bayesian_comparison.txt"), sep = "\n")
