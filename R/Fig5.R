@@ -63,15 +63,17 @@ for (iclu in 1:10)
 }
 
 # -----------------------------------------------------------------------------
-# Table 1 - one-parameter (general) and two-parameter (cluster) fits per cluster.
+# Table 1 - one-parameter (general) fit per cluster. The published general model
+# fixes the central angle at gamma_cen = pi/2 (grid "b"); the gamma_cen = 0.49*pi
+# grid ("B") is written separately as a supplementary check.
 # -----------------------------------------------------------------------------
-table_clusB = cbind(eps_clusB, round(pchisq(apply(clus_chi2B[, ], 1, min), rar.num - 1), 2))
-colnames(table_clusB) = c("eps_med", "eps_low", "eps_upp", "p_value")
-write.table(table_clusB, "outputs/Table1_general_model.txt", quote = FALSE)
+table_general = cbind(eps_clusb, round(pchisq(apply(clus_chi2b[, ], 1, min), rar.num - 1), 2))
+colnames(table_general) = c("eps_med", "eps_low", "eps_upp", "p_value")
+write.table(table_general, "outputs/Table1_general_model.txt", quote = FALSE)
 
-table_clusb = cbind(eps_clusb, round(pchisq(apply(clus_chi2b[, ], 1, min), rar.num - 1), 2))
-colnames(table_clusb) = c("eps_med", "eps_low", "eps_upp", "p_value")
-write.table(table_clusb, "outputs/Suppl_table_general_model_variant.txt", quote = FALSE)
+table_general_variant = cbind(eps_clusB, round(pchisq(apply(clus_chi2B[, ], 1, min), rar.num - 1), 2))
+colnames(table_general_variant) = c("eps_med", "eps_low", "eps_upp", "p_value")
+write.table(table_general_variant, "outputs/Suppl_table_general_model_variant.txt", quote = FALSE)
 
 table_clusC = cbind(eps_clusC, round(gal_clusC, 3), round(pchisq(apply(clus_chi2C[, , ], 1, min), rar.num - 1), 2))
 colnames(table_clusC) = c("eps_med", "eps_low", "eps_upp", "ggal_med", "ggal_low", "ggal_upp", "p_value")
