@@ -24,7 +24,7 @@ vEvH_sort    = sqrt(vE2vH2_sort)
 vE2vH2_sort2 = 10^seq(0, 8, length.out = 500)
 vEvH_sort2   = sqrt(vE2vH2_sort2)
 
-# Cluster-model curve with median / upper / lower epsilon_H (from stage Fig4/Fig5).
+# Cluster-model curve with median / upper / lower epsilon_H from the cluster fits.
 dens_div_dens = vE2vH2_sort / (mean(eps_clusC[-3, 1])^2 + vE2vH2_sort)
 gamma_Mmed = asin(sqrt(sin(g_galaxy)^2 - dens_div_dens * (sin(gblack_hole)^2 - sin(gempty_space)^2)))
 gamma_0med = gamma_Mmed / cos(gamma_Mmed)

@@ -1,8 +1,8 @@
 # =============================================================================
-# Stage 1 - per-galaxy best-fit parameters and supplementary diagnostics
+# Per-galaxy best-fit parameters and supplementary diagnostics
 #
 # Selects, for each galaxy, the best-fit eps_H (one- and two-parameter models)
-# and central angle from the chi-square grids built in stage 0, writes the
+# and central angle from the chi-square grids built during setup, writes the
 # parameter table, and draws the supplementary 60-panel diagnostic figures.
 # =============================================================================
 

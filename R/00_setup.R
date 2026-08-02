@@ -1,5 +1,5 @@
 # =============================================================================
-# Stage 0 - packages, physical constants, model helpers and data preprocessing
+# Setup: packages, physical constants, model helpers and data preprocessing
 #
 # Monjo & Banik (2025), ApJ 992, 35. Sourced first by run_all.R; every later
 # stage relies on the objects created here (shared session state).
