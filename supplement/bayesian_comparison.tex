@@ -1,0 +1,188 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage[hidelinks]{hyperref}
+
+\title{\vspace{-1.5em}\textbf{Supplementary note}: \\ Bayesian comparison of HMG and MOND\\
+on galaxy rotation curves}
+\author{Robert Monjo}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-2em}
+
+\begin{center}\vspace{-1em}
+\small This note is supplementary material to Monjo \& Banik (2025),
+\emph{Distinct acceleration relations of galaxies and galaxy clusters from
+hyperconical modified gravity}, ApJ \textbf{992}, 35 \cite{Monjo2025}.
+\end{center}
+\medskip
+
+\begin{abstract}
+\noindent
+We test whether the neighbourhood parameter $\varepsilon_H$ of hyperconical
+modified gravity (HMG) must be fitted per galaxy or is set by the local baryonic
+density. It is set by the density through a single global scale $s$ (best-fit
+$s=4.06$, recovering the $s=4$ of the main text): one parameter, not one or two per
+galaxy. On the high-quality McGaugh (2007) sample this one-parameter model reaches
+$\chi^2_\nu=1.47$ against $3.15$ for MOND and is preferred by the Bayesian
+information criterion (BIC); the large information-criterion penalties quoted for
+HMG apply to a per-galaxy configuration the theory does not require. We do not
+claim outperformance of MOND: on the full SPARC sample fixed baryons are inadequate
+for either model, and with per-galaxy $M/L$ fitting the two are at parity.
+\end{abstract}
+
+\section{Method}
+\label{sec:method}
+
+We use the McGaugh (2007) high-quality galaxy sample as compiled for the main
+analysis \cite{Monjo2025} and the galaxy-cluster radial-acceleration sample
+($10$ clusters, $108$ points). The compilation has $61$ galaxies with finite
+parameters ($696$ points), three of them with a single measured point; the $60$
+high-quality curves quoted in the main text omit one such galaxy (UGC~6923,
+dropped from its Fig.~5), and restricting to those $60$ leaves every conclusion
+below unchanged. The baryonic circular speed
+$V_{\rm bar}=(V_\star^2+V_{\rm gas}^2)^{1/2}$ is held fixed for every model, so all
+comparisons are made on identical baryons with no stellar mass-to-light fitting.
+This fixed-baryon comparison is meaningful only where the stellar $M/L$ is well
+determined: on the full SPARC sample it is not (both models then give
+$\chi^2_\nu$ of $20$ to $34$, a cross-check included in the reproduction script),
+so per-galaxy $M/L$ fitting would be required there, under which HMG and MOND reach
+parity (as in the Wilcoxon test of Aydogdu 2026). We therefore restrict to the
+high-quality sample.
+
+HMG predicts the circular speed through
+\begin{equation}
+  V^2=V_{\rm bar}^2\,\left[\,1+\frac{2c/t}{a_N\,\gamma_0}\,\right]^{1/2},
+  \qquad
+  \gamma_0=\frac{\gamma_{\rm sys}}{\cos\gamma_{\rm sys}},
+  \qquad
+  \sin^2\!\gamma_{\rm sys}=\sin^2\!\gamma_U+(\sin^2\!\gamma_{\rm cen}-\sin^2\!\gamma_U)\,q,
+  \label{eq:hmg}
+\end{equation}
+where $a_N=V_{\rm bar}^2/r$ is the Newtonian baryonic acceleration,
+$q=|u^2-\varepsilon_H^2|/(u^2+\varepsilon_H^2)$ is the neighbourhood weight with
+$u=\sqrt2\,V_N/V_H$ and $V_H=r/t$, and $\gamma_{\rm sys}$ runs between the
+empty-space angle $\gamma_U=\pi/3$ and the central angle $\gamma_{\rm cen}=0.48\pi$
+as the neighbourhood parameter $\varepsilon_H$ varies.
+In the \emph{general model} $\varepsilon_H$ is not fitted: it is set by the local
+baryonic density \cite{Monjo2026},
+\begin{equation}
+  \varepsilon_H^2(s)=\frac{\rho_{\rm nei}(s)}{\rho_{\rm vac}}+\frac16,
+  \qquad
+  \rho_{\rm nei}(s)=\frac{M_{\rm bar}}{\tfrac43\pi(s\,r_{\rm sys})^3},
+  \qquad
+  \rho_{\rm vac}=\frac{3}{8\pi G t^2},
+  \label{eq:density}
+\end{equation}
+with $s=4$ for galaxies. Since $M_{\rm bar}=V_N^2 r/G$, the density term is
+identically $\rho_{\rm nei}/\rho_{\rm vac}=2\,(V_N/V_H)^2/s^3=u^2/s^3$;
+$\varepsilon_H$ is therefore set by the observed mass and size once the scale $s$
+is chosen. We calibrate $s$ globally to the galaxies, a single fitted parameter;
+its best fit $s=4.06$ recovers the $s=4$ of the main text. This scale is the only
+quantity fitted: $\gamma_{\rm cen}$ is fixed and no parameter is fitted per galaxy,
+against MOND's single fixed $a_0$.
+
+MOND \cite{Milgrom1983} predicts $V^2=V_{\rm bar}^2\,\nu(a_N/a_0)$ with the simple
+interpolating function and $a_0=\SI{1.2e-10}{m/s^2}$ held fixed.
+
+The galaxy data carry no per-point velocity errors. As a representative proxy we
+combine in quadrature the two median summaries of the SPARC $e_{V_{\rm obs}}$
+distribution (Lelli et al.\ 2016): the median fractional error, $4.3\%$, and the
+median absolute error, $\SI{4.6}{km/s}$, giving
+$\sigma_V=[(0.043\,V_{\rm obs})^2+(4.6\,{\rm km\,s^{-1}})^2]^{1/2}$. This is a
+conservative sensitivity choice, not the published per-point error, and the
+conclusion does not rest on it: the error-model-free $\mathrm{BIC_p}$ below favours
+the one-parameter model equally ($\Delta\mathrm{BIC_p}=-261$). We quote
+$\chi^2=\sum[(V_{\rm model}-V_{\rm obs})/\sigma_V]^2$ with the Bayesian information
+criterion $\mathrm{BIC}=\chi^2+k\ln N$ \cite{Schwarz1978}, where $N$ is the number
+of points and $k$ the number of fitted parameters. Independently, we also report
+an error-model-free selection: the profiled-variance BIC on the $\ln V$ residuals,
+$\mathrm{BIC_p}=N\ln(\mathrm{SSR}/N)+k\ln N$. Its variance parameter is common to
+all models and cancels in $\Delta\mathrm{BIC_p}$; the two likelihoods differ, so
+BIC and $\mathrm{BIC_p}$ are compared only within their own column. Clusters use
+the tabulated acceleration errors directly.
+
+\section{Results}
+\label{sec:results}
+
+\paragraph{Galaxies.}
+Table~\ref{tab:gal} lists the fits. With $\varepsilon_H$ set by the density through
+a single global scale $s$ (best-fit $4.06$), HMG reaches $\chi^2_\nu=1.47$ against
+$3.15$ for MOND. Both exceed unity ($p=1\times10^{-14}$ and $3\times10^{-154}$):
+with baryons held fixed a reduced $\chi^2$ above one is expected, and only the
+many-parameter fits reach $p\gtrsim0.4$. The comparison is therefore relative; by
+the BIC the one-parameter model is preferred over MOND ($\Delta\mathrm{BIC}=-1167$;
+$|\Delta\mathrm{BIC}|>10$ counts as decisive on the scale of \cite{KassRaftery1995}).
+Adding per-galaxy freedom does not change the picture against MOND: the
+$122$-parameter fit (the analogue of the penalised $248$) is indistinguishable from
+the one-parameter model in the $\chi^2$-based BIC ($1021$ versus $1025$), although
+the error-model-free BIC rewards its extra flexibility. The density-predicted and
+best-fit $\varepsilon_H$ correlate at $r=0.88$, consistent with $\varepsilon_H$
+being set by baryonic structure. This is a statement of parameter economy on a
+sample where fixed baryons are valid, not of universal outperformance of MOND.
+
+\begin{table}[htbp]
+\centering
+\caption{Galaxy rotation-curve fits (McGaugh 2007; $61$ galaxies, $696$ points;
+identical fixed baryons). $\Delta$BIC is against MOND with the SPARC errors;
+$\Delta$BIC$_{\rm p}$ is the error-model-free profiled-variance form. Negative
+values favour the row over MOND.}
+\label{tab:gal}
+\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccccc}
+\toprule
+Model & params & $k$ & $\chi^2$ & $\chi^2_\nu$ & BIC & $\Delta$BIC & $\Delta$BIC$_{\rm p}$ \\
+\midrule
+HMG, global density scale $s$ (best-fit $4.06$) & $1$ & $1$  & $1018$ & $1.47$ & $1025$ & $\mathbf{-1167}$ & $-261$ \\
+HMG, $\varepsilon_H$ per galaxy      & $61$ & $61$ & $641$  & $1.01$ & $1040$ & $-1152$ & $-225$ \\
+HMG, $\varepsilon_H$, $\gamma_{\rm cen}$ per galaxy & $122$ & $122$ & $222$ & $0.39$ & $1021$ & $-1171$ & $-535$ \\
+MOND (\,$a_0$ fixed) & $0$ & $0$ & $2192$ & $3.15$ & $2192$ & $0$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Clusters.}
+The per-cluster scale $s$ (Table~\ref{tab:clu}) is a fitted diagnostic, one value
+per cluster, not an independent prediction: it shows only that the ten clusters lie
+on the density relation~\eqref{eq:density} for scales of order unity (median
+$s=0.91$, range $0.37$ to $2.11$). Clusters are the regime where MOND itself
+requires additional unseen mass.
+
+\begin{table}[htbp]
+\centering\small
+\setlength{\tabcolsep}{4.5pt}
+\caption{Best-fit $\varepsilon_H^{\rm fit}$ (general model, $\gamma_{\rm cen}=\pi/2$)
+and the fitted per-cluster scale $s$ placing each cluster on the density
+relation~\eqref{eq:density}. Here $s$ is a diagnostic, not a prediction.}
+\label{tab:clu}
+\begin{tabular}{lcccccccccc}
+\toprule
+cluster & A0085 & A1795 & A2029 & A2142 & A3158 & A0262 & A2589 & A3571 & A0576 & A0496 \\
+\midrule
+$\varepsilon_H^{\rm fit}$ & 39.5 & 55.5 & 52.0 & 46.0 & 53.5 & 95.5 & 60.0 & 57.5 & 43.5 & 50.5 \\
+$s$ & 1.52 & 0.37 & 2.11 & 1.28 & 1.01 & 0.42 & 0.73 & 0.82 & 0.60 & 1.24 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{Data availability}
+The analysis of Tables~\ref{tab:gal} and~\ref{tab:clu} is reproducible with
+\texttt{supplement/bayesian\_comparison.R} at
+\url{https://github.com/robertmonjo/distinct_acceleration_relations}.
+
+\begin{thebibliography}{9}
+\footnotesize
+\bibitem{Monjo2025} Monjo R., Banik I., 2025, ApJ, \textbf{992}, 35.
+\bibitem{Monjo2026} Monjo R., 2026, MNRAS, \textbf{549}, stag965.
+\bibitem{Milgrom1983} Milgrom M., 1983, ApJ, \textbf{270}, 365.
+\bibitem{McGaugh2007} McGaugh S.S., 2007, ApJ, \textbf{659}, 149.
+\bibitem{Lelli2016} Lelli F., McGaugh S.S., Schombert J.M., 2016, AJ, \textbf{152}, 157.
+\bibitem{Schwarz1978} Schwarz G., 1978, Ann.\ Statist., \textbf{6}, 461.
+\bibitem{KassRaftery1995} Kass R.E., Raftery A.E., 1995, J.\ Am.\ Stat.\ Assoc., \textbf{90}, 773.
+\end{thebibliography}
+
+\end{document}

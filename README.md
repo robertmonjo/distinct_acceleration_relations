@@ -66,6 +66,9 @@ R/
 data/                     # vendored input datasets (+ CHECKSUMS.sha256; see provenance)
 tests/
   test_outputs.R          # regression test against the published Table 1 values
+supplement/
+  bayesian_comparison.R   # Bayesian HMG-vs-MOND comparison (parameter economy of eps_H)
+  bayesian_comparison.tex # the supplementary note (+ compiled .pdf)
 outputs/                  # generated figures and tables (git-ignored)
 sessionInfo.txt           # R and package versions used for the published run
 ```
