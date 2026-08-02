@@ -10,24 +10,44 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
+# Confidence interval of a fitted parameter from its chi-square profile.
+#
+# Well-constrained clusters use the classical criterion: the grid points whose
+# chi-square falls below the absolute threshold `thr` (the qchisq level for the
+# number of data points). A cluster whose best fit already exceeds that
+# threshold fails the chi-square test (p-value > 0.95); no grid point qualifies
+# and the classical range() would return (Inf, -Inf). For those cases a mixed
+# criterion is applied instead: the error bars are rescaled by the reduced
+# chi-square of the best fit (standard error inflation for a poor fit), which
+# yields a finite interval,  chi2 < min(chi2) * (1 + qchisq(0.90, 1) / dof).
+conf_interval <- function(chi2, grid, thr, dof)
+{
+  below <- chi2 < thr
+  if (any(below, na.rm = TRUE)) return(range(grid[below]))
+  chi2_min <- min(chi2, na.rm = TRUE)
+  range(grid[chi2 < chi2_min * (1 + qchisq(0.90, 1) / dof)])
+}
+
+# -----------------------------------------------------------------------------
 # Best-fit epsilon_H (and gamma_cen) per cluster from the chi-square grids, plus
 # per-cluster redshift, mass, radius and escape-speed summaries.
 # -----------------------------------------------------------------------------
 for (iclu in 1:10)
 {
+  dof = rar.num[iclu] - 1
   eps_clusA[iclu, 1]   = seq_eps[order(clus_chi2A[iclu, ])[1]]
-  eps_clusA[iclu, 2:3] = range(seq_eps[clus_chi2A[iclu, ] < p95[iclu]])
+  eps_clusA[iclu, 2:3] = conf_interval(clus_chi2A[iclu, ], seq_eps, p95[iclu], dof)
   eps_clusB[iclu, 1]   = seq_eps[order(clus_chi2B[iclu, ])[1]]
-  eps_clusB[iclu, 2:3] = range(seq_eps[clus_chi2B[iclu, ] < p95[iclu]])
+  eps_clusB[iclu, 2:3] = conf_interval(clus_chi2B[iclu, ], seq_eps, p95[iclu], dof)
   eps_clusb[iclu, 1]   = seq_eps[order(clus_chi2b[iclu, ])[1]]
-  eps_clusb[iclu, 2:3] = range(seq_eps[clus_chi2b[iclu, ] < p95[iclu]])
+  eps_clusb[iclu, 2:3] = conf_interval(clus_chi2b[iclu, ], seq_eps, p95[iclu], dof)
 
   best_gal_C = order(apply(clus_chi2C[iclu, , ], 2, min))[1]
   best_eps_C = order(apply(clus_chi2C[iclu, , ], 1, min))[1]
   eps_clusC[iclu, 1]   = seq_eps[order(clus_chi2C[iclu, , best_gal_C])[1]]
-  eps_clusC[iclu, 2:3] = range(seq_eps[clus_chi2C[iclu, , best_gal_C] < p67[iclu]])
+  eps_clusC[iclu, 2:3] = conf_interval(clus_chi2C[iclu, , best_gal_C], seq_eps, p67[iclu], dof)
   gal_clusC[iclu, 1]   = seq_gal[order(clus_chi2C[iclu, best_eps_C, ])[1]]
-  gal_clusC[iclu, 2:3] = range(seq_gal[clus_chi2C[iclu, best_eps_C, ] < p67[iclu]])
+  gal_clusC[iclu, 2:3] = conf_interval(clus_chi2C[iclu, best_eps_C, ], seq_gal, p67[iclu], dof)
 
   clus_z[iclu]       = max(rar$z[rar$Name == clusters[iclu]])
   clus_mass[iclu]    = max(rar.mass[rar$Name == clusters[iclu]])
