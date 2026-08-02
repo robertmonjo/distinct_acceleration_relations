@@ -74,7 +74,7 @@ bicC <- function(chi2, k) chi2 + k * log(N)                 # BIC with SPARC err
 bicP <- function(ssr, k)  N * log(ssr / N) + k * log(N)     # BIC, profiled variance
 
 gal_tab <- data.frame(
-  model = c("HMG eps_H closed by density (s=4)", "HMG eps_H fitted per galaxy",
+  model = c("HMG eps_H set by density (s=4)", "HMG eps_H fitted per galaxy",
             "MOND (a0 fixed = 1.2e-10)"),
   fitted_params = c(0, used, 0),
   k = c(1, used, 0),
