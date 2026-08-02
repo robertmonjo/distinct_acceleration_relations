@@ -33,8 +33,11 @@ gnames <- names(gal_counts); Ngal <- length(gnames)
 rho_ratio_gal <- mcgaugh.mass / (4/3 * pi * (mcgaugh.R$x * kpc * 4)^3) / rho_vac
 epsH_closed   <- sqrt(rho_ratio_gal + 1/6)          # Eq. 4 closure
 
-# log-velocity residuals of a galaxy under HMG (given eps_H) or MOND
-gal_res <- function(i, model, epsH = NA) {
+# Chi-square per galaxy under HMG (given eps_H) or MOND, with an assumed velocity
+# uncertainty sigma = sqrt((FRAC*Vobs)^2 + FLOOR^2) [km/s] (the paper's data carry
+# no per-point errors; FRAC = 0.05, FLOOR = 5 km/s give chi2_nu ~ 1 for the closure).
+FRAC <- 0.05; FLOOR <- 5
+gal_chi2 <- function(i, model, epsH = NA) {
   lg <- gal_name_row == gnames[i]
   Vk <- sqrt(mcgaugh$Vst[lg]^2 + mcgaugh$Vgas[lg]^2)
   R  <- mcgaugh$R[lg]; Vobs <- mcgaugh$Vobs[lg]
@@ -45,35 +48,35 @@ gal_res <- function(i, model, epsH = NA) {
     vevH <- (sqrt(2) * Vk * kms * T0) / (R * kpc)
     quot <- abs(vevH^2 - epsH^2) / (epsH^2 + vevH^2)
     gsys <- asin(sqrt(sin(gamma_U)^2 + (sin(gamma_cen)^2 - sin(gamma_U)^2) * quot))
-    g0   <- gsys / cos(gsys)
-    D    <- sqrt(1 + (2 * c0 / T0) / (aN * g0))
+    D    <- sqrt(1 + (2 * c0 / T0) / (aN * gsys / cos(gsys)))
   }
-  r <- log(Vk * sqrt(D)) - log(Vobs)
-  r[is.finite(r) & Vobs > 0]
+  Vmod <- Vk * sqrt(D); sig <- sqrt((FRAC * Vobs)^2 + FLOOR^2)
+  ok <- is.finite(Vmod) & is.finite(Vobs) & Vobs > 0
+  list(chi2 = sum(((Vmod[ok] - Vobs[ok]) / sig[ok])^2), n = sum(ok))
 }
 
 grid_eps <- unique(c(seq(0.5, 10, 0.1), seq(10, 200, 0.5)))
-N <- 0; used <- 0; ssrA <- 0; ssrB <- 0; ssrM <- 0; epsB <- rep(NA, Ngal)
+N <- 0; used <- 0; chi2A <- 0; chi2B <- 0; chi2M <- 0; epsB <- rep(NA, Ngal)
 for (i in 1:Ngal) {
   if (!is.finite(epsH_closed[i])) next
-  rA <- gal_res(i, "HMG", epsH_closed[i]); if (!length(rA)) next
-  used <- used + 1; N <- N + length(rA)
-  ssrA <- ssrA + sum(rA^2)
-  ssrM <- ssrM + sum(gal_res(i, "MOND")^2)
-  sB <- sapply(grid_eps, function(e) { r <- gal_res(i, "HMG", e); if (length(r)) sum(r^2) else Inf })
-  ssrB <- ssrB + min(sB); epsB[i] <- grid_eps[which.min(sB)]
+  a <- gal_chi2(i, "HMG", epsH_closed[i]); if (a$n == 0) next
+  used <- used + 1; N <- N + a$n
+  chi2A <- chi2A + a$chi2
+  chi2M <- chi2M + gal_chi2(i, "MOND")$chi2
+  sB <- sapply(grid_eps, function(e) gal_chi2(i, "HMG", e)$chi2)
+  chi2B <- chi2B + min(sB); epsB[i] <- grid_eps[which.min(sB)]
 }
-bic  <- function(ssr, k) N * log(ssr / N) + k * log(N)       # Gaussian, profiled variance
-rmse <- function(ssr) sqrt(ssr / N)
+bic <- function(chi2, k) chi2 + k * log(N)                   # standard BIC, known errors
 
 gal_tab <- data.frame(
   model = c("HMG eps_H closed by density (s=4)", "HMG eps_H fitted per galaxy",
             "MOND (a0 fixed = 1.2e-10)"),
   fitted_params = c(0, used, 0),
   k = c(1, used + 1, 0),
-  rms_dlnV = round(c(rmse(ssrA), rmse(ssrB), rmse(ssrM)), 4),
-  BIC = round(c(bic(ssrA, 1), bic(ssrB, used + 1), bic(ssrM, 0)), 1))
-gal_tab$dBIC_vs_MOND <- round(gal_tab$BIC - gal_tab$BIC[3], 1)
+  chi2 = round(c(chi2A, chi2B, chi2M)),
+  chi2_nu = round(c(chi2A/(N-1), chi2B/(N-used), chi2M/N), 2),
+  BIC = round(c(bic(chi2A, 1), bic(chi2B, used + 1), bic(chi2M, 0))))
+gal_tab$dBIC_vs_MOND <- round(gal_tab$BIC - gal_tab$BIC[3])
 r_pred_fit <- cor(epsH_closed, epsB, use = "complete.obs")
 
 # --- Clusters -----------------------------------------------------------------
@@ -108,7 +111,7 @@ sink("outputs/Suppl_parameter_economy.txt")
 cat("Parameter economy of the HMG general model\n")
 cat("eps_H^2 = rho_nei(s)/rho_vac + 1/6   (Monjo 2026, MNRAS 549, Eq. 4)\n\n")
 cat(sprintf("GALAXIES  (McGaugh 2007: %d galaxies, %d rotation-curve points)\n", used, N))
-cat("goodness = rms of ln(V_model) - ln(V_obs); BIC = N ln(SSR/N) + k ln N\n\n")
+cat(sprintf("sigma_V = sqrt((%.2f Vobs)^2 + %d^2) km/s ; BIC = chi2 + k ln N\n\n", FRAC, FLOOR))
 print(gal_tab, row.names = FALSE)
 cat(sprintf("\nr(eps_H closed, eps_H fitted) = %.3f\n", r_pred_fit))
 cat(sprintf("\nCLUSTERS  (%d clusters, %d RAR points): per-cluster scale s for the density relation\n\n",
