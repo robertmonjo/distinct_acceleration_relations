@@ -37,7 +37,7 @@ epsH_of_s    <- function(s) sqrt(pmax(rho_ratio_s1 / s^3 + 1/6, 1e-6))
 # McGaugh & Schombert 2016: median 4.3% fractional error, 4.6 km/s floor);
 # (ii) the error-model-free ln V residual for a profiled-variance BIC.
 FRAC <- 0.043; FLOOR <- 4.6
-gal_terms <- function(i, model, epsH = NA) {
+gal_terms <- function(i, model, epsH = NA, gc = gamma_cen) {
   lg <- gal_name_row == gnames[i]
   Vk <- sqrt(mcgaugh$Vst[lg]^2 + mcgaugh$Vgas[lg]^2)
   R  <- mcgaugh$R[lg]; Vobs <- mcgaugh$Vobs[lg]
@@ -47,7 +47,7 @@ gal_terms <- function(i, model, epsH = NA) {
   } else {
     vevH <- (sqrt(2) * Vk * kms * T0) / (R * kpc)
     quot <- abs(vevH^2 - epsH^2) / (epsH^2 + vevH^2)
-    gsys <- asin(sqrt(sin(gamma_U)^2 + (sin(gamma_cen)^2 - sin(gamma_U)^2) * quot))
+    gsys <- asin(sqrt(pmin(pmax(sin(gamma_U)^2 + (sin(gc)^2 - sin(gamma_U)^2) * quot, 0), 1)))
     D    <- sqrt(1 + (2 * c0 / T0) / (aN * gsys / cos(gsys)))
   }
   Vmod <- Vk * sqrt(D); sig <- sqrt((FRAC * Vobs)^2 + FLOOR^2)
@@ -87,22 +87,37 @@ for (i in 1:Ngal) {
   epsB[i] <- grid_eps[which.min(sapply(tb, `[[`, "chi2"))]
 }
 used <- sum(!is.na(epsB))
+
+# HMG with eps_H AND gamma_cen fitted freely per galaxy (2 params/galaxy: the
+# analogue of the 248-parameter configuration penalised by Aydogdu 2026)
+eg2 <- unique(c(seq(0.5, 10, 0.2), seq(10, 200, 1))); gg2 <- seq(0.44, 0.50, 0.005) * pi
+chi2C <- 0; ssrC <- 0
+for (i in 1:Ngal) {
+  if (!is.finite(rho_ratio_s1[i]) || gal_terms(i, "HMG", eg2[1])$n == 0) next
+  best <- Inf; bssr <- NA
+  for (gc in gg2) for (e in eg2) { t <- gal_terms(i, "HMG", e, gc)
+    if (t$chi2 < best) { best <- t$chi2; bssr <- t$ssr } }
+  chi2C <- chi2C + best; ssrC <- ssrC + bssr
+}
+
 bicC <- function(chi2, k) chi2 + k * log(N)                 # BIC with SPARC errors
 bicP <- function(ssr, k)  N * log(ssr / N) + k * log(N)     # BIC, profiled variance
 
 gal_tab <- data.frame(
   model = c(sprintf("HMG global density scale s (best-fit %.2f)", s_best),
-            "HMG eps_H fitted per galaxy", "MOND (a0 fixed = 1.2e-10)"),
-  fitted_params = c(1, used, 0),
-  k = c(1, used, 0),
-  chi2 = round(c(chi2A, chi2B, chi2M)),
-  chi2_nu = round(c(chi2A/(N-1), chi2B/(N-used), chi2M/N), 2),
+            "HMG eps_H fitted per galaxy",
+            "HMG eps_H and gamma_cen per galaxy",
+            "MOND (a0 fixed = 1.2e-10)"),
+  fitted_params = c(1, used, 2*used, 0),
+  k = c(1, used, 2*used, 0),
+  chi2 = round(c(chi2A, chi2B, chi2C, chi2M)),
+  chi2_nu = round(c(chi2A/(N-1), chi2B/(N-used), chi2C/(N-2*used), chi2M/N), 2),
   p_value = signif(c(pchisq(chi2A,N-1,lower.tail=FALSE), pchisq(chi2B,N-used,lower.tail=FALSE),
-                     pchisq(chi2M,N,lower.tail=FALSE)), 2),
-  BIC = round(c(bicC(chi2A,1), bicC(chi2B,used), bicC(chi2M,0))),
-  BIC_prof = round(c(bicP(ssrA,1), bicP(ssrB,used), bicP(ssrM,0))))
-gal_tab$dBIC      <- round(gal_tab$BIC - gal_tab$BIC[3])
-gal_tab$dBIC_prof <- round(gal_tab$BIC_prof - gal_tab$BIC_prof[3])
+                     pchisq(chi2C,N-2*used,lower.tail=FALSE), pchisq(chi2M,N,lower.tail=FALSE)), 2),
+  BIC = round(c(bicC(chi2A,1), bicC(chi2B,used), bicC(chi2C,2*used), bicC(chi2M,0))),
+  BIC_prof = round(c(bicP(ssrA,1), bicP(ssrB,used), bicP(ssrC,2*used), bicP(ssrM,0))))
+gal_tab$dBIC      <- round(gal_tab$BIC - gal_tab$BIC[4])
+gal_tab$dBIC_prof <- round(gal_tab$BIC_prof - gal_tab$BIC_prof[4])
 r_pred_fit <- cor(epsH_of_s(s_best), epsB, use = "complete.obs")
 
 # --- Clusters -----------------------------------------------------------------
