@@ -33,11 +33,12 @@ gnames <- names(gal_counts); Ngal <- length(gnames)
 rho_ratio_gal <- mcgaugh.mass / (4/3 * pi * (mcgaugh.R$x * kpc * 4)^3) / rho_vac
 epsH_closed   <- sqrt(rho_ratio_gal + 1/6)          # Eq. 4 closure
 
-# Chi-square per galaxy under HMG (given eps_H) or MOND, with an assumed velocity
-# uncertainty sigma = sqrt((FRAC*Vobs)^2 + FLOOR^2) [km/s] (the paper's data carry
-# no per-point errors; FRAC = 0.05, FLOOR = 5 km/s give chi2_nu ~ 1 for the closure).
-FRAC <- 0.05; FLOOR <- 5
-gal_chi2 <- function(i, model, epsH = NA) {
+# Two goodness measures per galaxy. (i) chi2 with the SPARC velocity uncertainty
+# (Lelli, McGaugh & Schombert 2016): median fractional error 4.3% with a 4.6 km/s
+# floor, sigma = sqrt((0.043 Vobs)^2 + 4.6^2). (ii) The assumption-free residual
+# in ln V, whose profiled-variance BIC needs no error model.
+FRAC <- 0.043; FLOOR <- 4.6
+gal_terms <- function(i, model, epsH = NA) {
   lg <- gal_name_row == gnames[i]
   Vk <- sqrt(mcgaugh$Vst[lg]^2 + mcgaugh$Vgas[lg]^2)
   R  <- mcgaugh$R[lg]; Vobs <- mcgaugh$Vobs[lg]
@@ -52,31 +53,37 @@ gal_chi2 <- function(i, model, epsH = NA) {
   }
   Vmod <- Vk * sqrt(D); sig <- sqrt((FRAC * Vobs)^2 + FLOOR^2)
   ok <- is.finite(Vmod) & is.finite(Vobs) & Vobs > 0
-  list(chi2 = sum(((Vmod[ok] - Vobs[ok]) / sig[ok])^2), n = sum(ok))
+  list(chi2 = sum(((Vmod[ok]-Vobs[ok])/sig[ok])^2),
+       ssr  = sum((log(Vmod[ok])-log(Vobs[ok]))^2), n = sum(ok))
 }
 
 grid_eps <- unique(c(seq(0.5, 10, 0.1), seq(10, 200, 0.5)))
-N <- 0; used <- 0; chi2A <- 0; chi2B <- 0; chi2M <- 0; epsB <- rep(NA, Ngal)
+N<-0; used<-0; chi2A<-0; chi2B<-0; chi2M<-0; ssrA<-0; ssrB<-0; ssrM<-0; epsB<-rep(NA,Ngal)
 for (i in 1:Ngal) {
   if (!is.finite(epsH_closed[i])) next
-  a <- gal_chi2(i, "HMG", epsH_closed[i]); if (a$n == 0) next
+  a <- gal_terms(i, "HMG", epsH_closed[i]); if (a$n == 0) next
   used <- used + 1; N <- N + a$n
-  chi2A <- chi2A + a$chi2
-  chi2M <- chi2M + gal_chi2(i, "MOND")$chi2
-  sB <- sapply(grid_eps, function(e) gal_chi2(i, "HMG", e)$chi2)
-  chi2B <- chi2B + min(sB); epsB[i] <- grid_eps[which.min(sB)]
+  chi2A <- chi2A + a$chi2; ssrA <- ssrA + a$ssr
+  m <- gal_terms(i, "MOND"); chi2M <- chi2M + m$chi2; ssrM <- ssrM + m$ssr
+  tb <- lapply(grid_eps, function(e) gal_terms(i, "HMG", e))
+  chi2B <- chi2B + min(sapply(tb, `[[`, "chi2"))
+  ssrB  <- ssrB  + min(sapply(tb, `[[`, "ssr"))
+  epsB[i] <- grid_eps[which.min(sapply(tb, `[[`, "chi2"))]
 }
-bic <- function(chi2, k) chi2 + k * log(N)                   # standard BIC, known errors
+bicC <- function(chi2, k) chi2 + k * log(N)                 # BIC with SPARC errors
+bicP <- function(ssr, k)  N * log(ssr / N) + k * log(N)     # BIC, profiled variance
 
 gal_tab <- data.frame(
   model = c("HMG eps_H closed by density (s=4)", "HMG eps_H fitted per galaxy",
             "MOND (a0 fixed = 1.2e-10)"),
   fitted_params = c(0, used, 0),
-  k = c(1, used + 1, 0),
+  k = c(1, used, 0),
   chi2 = round(c(chi2A, chi2B, chi2M)),
   chi2_nu = round(c(chi2A/(N-1), chi2B/(N-used), chi2M/N), 2),
-  BIC = round(c(bic(chi2A, 1), bic(chi2B, used + 1), bic(chi2M, 0))))
-gal_tab$dBIC_vs_MOND <- round(gal_tab$BIC - gal_tab$BIC[3])
+  BIC = round(c(bicC(chi2A,1), bicC(chi2B,used), bicC(chi2M,0))),
+  BIC_prof = round(c(bicP(ssrA,1), bicP(ssrB,used), bicP(ssrM,0))))
+gal_tab$dBIC      <- round(gal_tab$BIC - gal_tab$BIC[3])
+gal_tab$dBIC_prof <- round(gal_tab$BIC_prof - gal_tab$BIC_prof[3])
 r_pred_fit <- cor(epsH_closed, epsB, use = "complete.obs")
 
 # --- Clusters -----------------------------------------------------------------
@@ -111,7 +118,8 @@ sink("outputs/Suppl_parameter_economy.txt")
 cat("Parameter economy of the HMG general model\n")
 cat("eps_H^2 = rho_nei(s)/rho_vac + 1/6   (Monjo 2026, MNRAS 549, Eq. 4)\n\n")
 cat(sprintf("GALAXIES  (McGaugh 2007: %d galaxies, %d rotation-curve points)\n", used, N))
-cat(sprintf("sigma_V = sqrt((%.2f Vobs)^2 + %d^2) km/s ; BIC = chi2 + k ln N\n\n", FRAC, FLOOR))
+cat(sprintf("chi2: sigma_V = sqrt((%.3f Vobs)^2 + %.1f^2) km/s [SPARC, Lelli+2016], BIC = chi2 + k lnN\n", FRAC, FLOOR))
+cat("BIC_prof: profiled-variance BIC = N ln(SSR_lnV/N) + k lnN (no error model assumed)\n\n")
 print(gal_tab, row.names = FALSE)
 cat(sprintf("\nr(eps_H closed, eps_H fitted) = %.3f\n", r_pred_fit))
 cat(sprintf("\nCLUSTERS  (%d clusters, %d RAR points): per-cluster scale s for the density relation\n\n",
