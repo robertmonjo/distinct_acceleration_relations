@@ -207,7 +207,7 @@ for (i in 1:length(gal_counts))
     gamma_cen = 0.47 * pi
     g_sys0_pred = asin((sin(gaempty)^2 + (sin(gamma_cen)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
     g_ratio_pred = g_sys0_pred / cos(g_sys0_pred)
-    gal_chi2_0.48[i, k] = mean(abs(log(g_ratio_pred) - log(g_ratio)), na.rm = T)
+    gal_chi2_0.47[i, k] = mean(abs(log(g_ratio_pred) - log(g_ratio)), na.rm = T)
 
     gamma_cen = 0.48 * pi
     g_sys0_pred = asin((sin(gaempty)^2 + (sin(gamma_cen)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
