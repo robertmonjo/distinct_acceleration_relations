@@ -116,46 +116,46 @@ log10_nu_MLS_values      = log10(nu_MLS_values)
 
 # -----------------------------------------------------------------------------
 # McGaugh et al. (2007, ApJ 659, 149) galaxy mass models.
-#   smcGa07  : per-radius rotation-curve table (R, Vobs, Vgas, Vst, ...)
-#   mcGa07   : companion mass-discrepancy table
+#   mcgaugh  : per-radius rotation-curve table (R, Vobs, Vgas, Vst, ...)
+#   mcgaugh_md   : companion mass-discrepancy table
 # -----------------------------------------------------------------------------
-mcGa07  = read.table("data/S_McGaugh2007_mass_discrepancy.txt", sep = "\t", header = T)
-smcGa07 = read.table("data/McGaugh2007.txt", sep = "\t", header = T)
-mcGa07  = mcGa07[!is.na(smcGa07$R), ]
-namess  = smcGa07$Name
-namesm  = mcGa07$Name
-namesg  = table(namess)
-namesG  = namesg
-names(namesG) = str_to_upper(names(namesg))
-names(namesG)[c(1, 2, 3)] = c("F563-1", "F563-V2", "F568-V1")
+mcgaugh_md  = read.table("data/S_McGaugh2007_mass_discrepancy.txt", sep = "\t", header = T)
+mcgaugh = read.table("data/McGaugh2007.txt", sep = "\t", header = T)
+mcgaugh_md  = mcgaugh_md[!is.na(mcgaugh$R), ]
+gal_name_row  = mcgaugh$Name
+md_names  = mcgaugh_md$Name
+gal_counts  = table(gal_name_row)
+gal_names_up  = gal_counts
+names(gal_names_up) = str_to_upper(names(gal_counts))
+names(gal_names_up)[c(1, 2, 3)] = c("F563-1", "F563-V2", "F568-V1")
 
 # Baryonic (Vst + Vgas) circular speed and derived accelerations.
-smcGa07.Vk = sqrt(smcGa07$Vst^2 + smcGa07$Vgas^2)
-smcGa07.V  = (smcGa07.Vk^2 * kms^2 + 2 * smcGa07.Vk^2 * kms^2 * smcGa07$R * kpc * c0 / (9 * T0))^0.25 / kms
-ak000 = smcGa07.Vk^2 / (smcGa07$R * kpc) * kms^2       # Newtonian (baryonic) acceleration
-aobs0 = smcGa07$Vobs^2 / (smcGa07$R * kpc) * kms^2     # observed acceleration
-di000 = smcGa07$Vobs^2 / smcGa07.Vk^2                  # squared velocity ratio
-mk000 = smcGa07.Vk^2 * (smcGa07$R * kpc) * kms^2       # enclosed baryonic mass proxy
-mk00  = mk000
+mcgaugh.Vk = sqrt(mcgaugh$Vst^2 + mcgaugh$Vgas^2)
+mcgaugh.V  = (mcgaugh.Vk^2 * kms^2 + 2 * mcgaugh.Vk^2 * kms^2 * mcgaugh$R * kpc * c0 / (9 * T0))^0.25 / kms
+a_newton = mcgaugh.Vk^2 / (mcgaugh$R * kpc) * kms^2       # Newtonian (baryonic) acceleration
+aobs0 = mcgaugh$Vobs^2 / (mcgaugh$R * kpc) * kms^2     # observed acceleration
+vel_ratio_sq = mcgaugh$Vobs^2 / mcgaugh.Vk^2                  # squared velocity ratio
+mass_bar = mcgaugh.Vk^2 * (mcgaugh$R * kpc) * kms^2       # enclosed baryonic mass proxy
+mass_bar_pt  = mass_bar
 
 # Per-point projective-angle factor gamma1 (needed by the galaxy branch of Fig. 2).
-ak00 = smcGa07.Vk^2 / (smcGa07$R * kpc) * kms^2
-di00 = smcGa07$Vobs^2 / smcGa07.Vk^2
-gg = 1 / ak00 * (2 * c0 / T0) / (di00^2 - 1)
+a_newton_pt = mcgaugh.Vk^2 / (mcgaugh$R * kpc) * kms^2
+vel_ratio_sq_pt = mcgaugh$Vobs^2 / mcgaugh.Vk^2
+gg = 1 / a_newton_pt * (2 * c0 / T0) / (vel_ratio_sq_pt^2 - 1)
 gg[gg > 30] = NA
 gg[gg < 1]  = NA
-ak00[(ak00 / ((smcGa07$R * kpc) / T0^2))^0.25 > 30] = NA
+a_newton_pt[(a_newton_pt / ((mcgaugh$R * kpc) / T0^2))^0.25 > 30] = NA
 gg = round(gg, 2)
 gamma1 = acos.((pi / 2) / gg)
 gamma1[gamma1 < 1.4] = NA
-gg000 = 1 / ak000 * (2 * c0 / T0) / (di000^2 - 1)
-gal_vevH = (sqrt(2) * smcGa07.Vk * kms * T0) / (smcGa07$R * kpc)
+g_ratio = 1 / a_newton * (2 * c0 / T0) / (vel_ratio_sq^2 - 1)
+gal_vevH = (sqrt(2) * mcgaugh.Vk * kms * T0) / (mcgaugh$R * kpc)
 
 # Per-galaxy aggregates.
-smcGa07.R    = aggregate(smcGa07$R, by = list(namess), max, na.rm = T)
-smcGa07.VN   = aggregate(smcGa07.Vk, by = list(namess), max, na.rm = T)
-smcGa07.VO   = aggregate(smcGa07.V, by = list(namess), mean, na.rm = T)
-smcGa07.mass = smcGa07.VN$x^2 * smcGa07.R$x * kpc * kms^2 / GN
+mcgaugh.R    = aggregate(mcgaugh$R, by = list(gal_name_row), max, na.rm = T)
+mcgaugh.VN   = aggregate(mcgaugh.Vk, by = list(gal_name_row), max, na.rm = T)
+mcgaugh.VO   = aggregate(mcgaugh.V, by = list(gal_name_row), mean, na.rm = T)
+mcgaugh.mass = mcgaugh.VN$x^2 * mcgaugh.R$x * kpc * kms^2 / GN
 
 
 # -----------------------------------------------------------------------------
@@ -166,35 +166,35 @@ smcGa07.mass = smcGa07.VN$x^2 * smcGa07.R$x * kpc * kms^2 / GN
 seq_gammagc = seq(0.44, 0.5, 0.001) * pi
 seq_galeps  = unique(c(1, seq(1, 10, 0.1), seq(10, 200, 1)))
 
-gal_xi2_0.47 = array(NA, dim = c(length(names(namesg)), length(seq_galeps)),
-                     dimnames = list(names(namesg), seq_galeps))
-gal_xi2_0.48 = array(NA, dim = c(length(names(namesg)), length(seq_galeps)),
-                     dimnames = list(names(namesg), seq_galeps))
-gal_xi2_0.5  = array(NA, dim = c(length(names(namesg)), length(seq_galeps)),
-                     dimnames = list(names(namesg), seq_galeps))
-gal_xi22     = array(NA, dim = c(length(names(namesg)), length(seq_galeps), length(seq_gammagc)),
-                     dimnames = list(names(namesg), seq_galeps, seq_gammagc))
+gal_chi2_0.47 = array(NA, dim = c(length(names(gal_counts)), length(seq_galeps)),
+                     dimnames = list(names(gal_counts), seq_galeps))
+gal_chi2_0.48 = array(NA, dim = c(length(names(gal_counts)), length(seq_galeps)),
+                     dimnames = list(names(gal_counts), seq_galeps))
+gal_chi2_0.5  = array(NA, dim = c(length(names(gal_counts)), length(seq_galeps)),
+                     dimnames = list(names(gal_counts), seq_galeps))
+gal_chi22     = array(NA, dim = c(length(names(gal_counts)), length(seq_galeps), length(seq_gammagc)),
+                     dimnames = list(names(gal_counts), seq_galeps, seq_gammagc))
 
-smcGa07.Rg = rep(NA, length(smcGa07$R))
-for (i in 1:length(namesg))
+mcgaugh.Rg = rep(NA, length(mcgaugh$R))
+for (i in 1:length(gal_counts))
 {
-  lg_gal = namess == names(namesg)[i]
-  smcGa07.Rg[lg_gal] = max(smcGa07$R[lg_gal])
+  lg_gal = gal_name_row == names(gal_counts)[i]
+  mcgaugh.Rg[lg_gal] = max(mcgaugh$R[lg_gal])
 
-  smcGa07.Vk = sqrt(smcGa07$Vst^2 + smcGa07$Vgas^2)
-  smcGa07.V  = (smcGa07.Vk^2 * kms^2 + 2 * smcGa07.Vk^2 * kms^2 * smcGa07$R * kpc * c0 / (9 * T0))^0.25 / kms
+  mcgaugh.Vk = sqrt(mcgaugh$Vst^2 + mcgaugh$Vgas^2)
+  mcgaugh.V  = (mcgaugh.Vk^2 * kms^2 + 2 * mcgaugh.Vk^2 * kms^2 * mcgaugh$R * kpc * c0 / (9 * T0))^0.25 / kms
 
-  ak000 = smcGa07.Vk[lg_gal]^2 / (smcGa07$R[lg_gal] * kpc) * kms^2
-  aobs0 = smcGa07$Vobs[lg_gal]^2 / (smcGa07$R[lg_gal] * kpc) * kms^2
-  di000 = smcGa07$Vobs[lg_gal]^2 / smcGa07.Vk[lg_gal]^2
-  mk000 = smcGa07.Vk[lg_gal]^2 * (smcGa07$R[lg_gal] * kpc) * kms^2
-  gal_vevH = (sqrt(2) * smcGa07.Vk[lg_gal] * kms * T0) / (smcGa07$R[lg_gal] * kpc)
+  a_newton = mcgaugh.Vk[lg_gal]^2 / (mcgaugh$R[lg_gal] * kpc) * kms^2
+  aobs0 = mcgaugh$Vobs[lg_gal]^2 / (mcgaugh$R[lg_gal] * kpc) * kms^2
+  vel_ratio_sq = mcgaugh$Vobs[lg_gal]^2 / mcgaugh.Vk[lg_gal]^2
+  mass_bar = mcgaugh.Vk[lg_gal]^2 * (mcgaugh$R[lg_gal] * kpc) * kms^2
+  gal_vevH = (sqrt(2) * mcgaugh.Vk[lg_gal] * kms * T0) / (mcgaugh$R[lg_gal] * kpc)
   gammaU = pi / 3
 
-  gg000_btfr = mean(1 / ak000 * (2 * c0 / T0) / (di000^2), na.rm = T)
-  gg000 = 1 / ak000 * (2 * c0 / T0) / (di000^2 - 1)
-  gg000 = round(gg000, 2)
-  g_sys1 = acos.((pi / 2) / gg000)
+  g_ratio_btfr = mean(1 / a_newton * (2 * c0 / T0) / (vel_ratio_sq^2), na.rm = T)
+  g_ratio = 1 / a_newton * (2 * c0 / T0) / (vel_ratio_sq^2 - 1)
+  g_ratio = round(g_ratio, 2)
+  g_sys1 = acos.((pi / 2) / g_ratio)
   g_sys1[g_sys1 < 1] = NA
 
   # One-parameter (general) model at three fixed central angles.
@@ -204,39 +204,39 @@ for (i in 1:length(namesg))
     gal_eps = seq_galeps[k]
     quotient_vevh = abs(gal_vevH^2 - gal_eps^2) / (gal_eps^2 + gal_vevH^2)
 
-    gammagc = 0.47 * pi
-    g_sys0_pred = asin((sin(gaempty)^2 + (sin(gammagc)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
-    gg000_pred = g_sys0_pred / cos(g_sys0_pred)
-    gal_xi2_0.48[i, k] = mean(abs(log(gg000_pred) - log(gg000)), na.rm = T)
+    gamma_cen = 0.47 * pi
+    g_sys0_pred = asin((sin(gaempty)^2 + (sin(gamma_cen)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
+    g_ratio_pred = g_sys0_pred / cos(g_sys0_pred)
+    gal_chi2_0.48[i, k] = mean(abs(log(g_ratio_pred) - log(g_ratio)), na.rm = T)
 
-    gammagc = 0.48 * pi
-    g_sys0_pred = asin((sin(gaempty)^2 + (sin(gammagc)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
-    gg000_pred = g_sys0_pred / cos(g_sys0_pred)
-    gal_xi2_0.48[i, k] = mean(abs(log(gg000_pred) - log(gg000)), na.rm = T)
+    gamma_cen = 0.48 * pi
+    g_sys0_pred = asin((sin(gaempty)^2 + (sin(gamma_cen)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
+    g_ratio_pred = g_sys0_pred / cos(g_sys0_pred)
+    gal_chi2_0.48[i, k] = mean(abs(log(g_ratio_pred) - log(g_ratio)), na.rm = T)
 
-    gammagc = 0.50 * pi
-    g_sys0_pred = asin((sin(gaempty)^2 + (sin(gammagc)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
-    gg000_pred = g_sys0_pred / cos(g_sys0_pred)
-    gal_xi2_0.5[i, k] = mean(abs(log(gg000_pred) - log(gg000)), na.rm = T)
+    gamma_cen = 0.50 * pi
+    g_sys0_pred = asin((sin(gaempty)^2 + (sin(gamma_cen)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
+    g_ratio_pred = g_sys0_pred / cos(g_sys0_pred)
+    gal_chi2_0.5[i, k] = mean(abs(log(g_ratio_pred) - log(g_ratio)), na.rm = T)
   }
 
   # Two-parameter (cluster-like) model over the (eps_H, gamma_cen) grid.
   for (k in 1:length(seq_galeps))
     for (j in 1:length(seq_gammagc))
     {
-      gammagc = seq_gammagc[j]
+      gamma_cen = seq_gammagc[j]
       gaempty = pi / 3
       gal_eps = seq_galeps[k]
       quotient_vevh = abs(gal_vevH^2 - gal_eps^2) / (gal_eps^2 + gal_vevH^2)
-      g_sys1_pred = asin((sin(gaempty)^2 + (sin(gammagc)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
-      gg001_pred = g_sys1_pred / cos(g_sys1_pred)
-      gal_xi22[i, k, j] = mean(abs(log(gg001_pred) - log(gg000)), na.rm = T)
+      g_sys1_pred = asin((sin(gaempty)^2 + (sin(gamma_cen)^2 - sin(gaempty)^2) * quotient_vevh)^0.5)
+      g_ratio_gal_pred = g_sys1_pred / cos(g_sys1_pred)
+      gal_chi22[i, k, j] = mean(abs(log(g_ratio_gal_pred) - log(g_ratio)), na.rm = T)
     }
 }
 
 # Best-fit containers filled in the next stage.
-galeps_0.47 = rep(NA, length(namesg))
-galeps_0.48 = rep(NA, length(namesg))
-galeps_0.5  = rep(NA, length(namesg))
-galeps_k    = rep(NA, length(namesg))
-gammagc_k   = rep(NA, length(namesg))
+galaxy_eps_0.47 = rep(NA, length(gal_counts))
+galaxy_eps_0.48 = rep(NA, length(gal_counts))
+galaxy_eps_0.5  = rep(NA, length(gal_counts))
+galaxy_eps_k    = rep(NA, length(gal_counts))
+gamma_cen_k   = rep(NA, length(gal_counts))

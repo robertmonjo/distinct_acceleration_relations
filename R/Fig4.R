@@ -9,19 +9,19 @@
 
 # Per-galaxy best-fit eps_H (used later by Figure 2); the diagnostic grid of
 # chi-square curves is drawn to the null device.
-gal_xi2 = gal_xi2_0.48
-nonan = !is.na(gal_xi2[, 1])
-galeps_ok = rep(NA, length(namesg))
-galeps_ko = rep(NA, length(namesg))
+gal_chi2 = gal_chi2_0.48
+nonan = !is.na(gal_chi2[, 1])
+galaxy_eps_ok = rep(NA, length(gal_counts))
+galaxy_eps_ko = rep(NA, length(gal_counts))
 par(mfrow = c(10, 7), mar = c(0, 0, 0, 0), oma = c(3, 3, 3, 3))
 for (i in 1:sum(nonan))
 {
-  plot(seq_galeps, gal_xi2[nonan, ][i, ], ylim = c(0, 1), xlim = c(1, 120), axes = FALSE, typ = "l", log = "x")
-  text(15, 0.45, names(namesg)[nonan][i], cex = 0.8)
+  plot(xlab = "", ylab = "", seq_galeps, gal_chi2[nonan, ][i, ], ylim = c(0, 1), xlim = c(1, 120), axes = FALSE, typ = "l", log = "x")
+  text(15, 0.45, names(gal_counts)[nonan][i], cex = 0.8)
   box()
-  galeps_ko[nonan][i] = seq_galeps[order(gal_xi2[nonan, ][i, ])[1]]
-  galeps_ok[nonan][i] = galeps_ko[nonan][i]
-  abline(v = galeps_ok[nonan][i], col = "red", lty = 2)
+  galaxy_eps_ko[nonan][i] = seq_galeps[order(gal_chi2[nonan, ][i, ])[1]]
+  galaxy_eps_ok[nonan][i] = galaxy_eps_ko[nonan][i]
+  abline(v = galaxy_eps_ok[nonan][i], col = "red", lty = 2)
   if ((i - 1) %% 6 == 0) axis(side = 2, seq(0.0, 0.2, 0.02), padj = 0.8, las = 2)
   if ((i) %% 6 == 0)     axis(side = 4, seq(0.0, 0.2, 0.02), padj = -0.8, las = 2)
   if (i <= 6)  axis(side = 3, c(1, 2, 10, 20, 50, 100, 200, 500), padj = 0.8)
@@ -76,11 +76,11 @@ seq_gal = c(seq(0.4, 0.498, length.out = 98), 0.499, 0.5)
 seq_eps = unique(c(seq(0.01, 1, 0.01), seq(1, 10, 0.1), seq(10, 50, 0.5), seq(50, 100, 1),
                    seq(100, 200, 2), seq(200, 1000, 20), seq(1000, 10000, 200)))
 
-clus_xi2g0 = array(NA, dim = c(length(clusters), length(seq_eps)), dimnames = list(clusters, seq_eps))
-clus_xi2A  = array(NA, dim = c(length(clusters), length(seq_eps)), dimnames = list(clusters, seq_eps))
-clus_xi2B  = array(NA, dim = c(length(clusters), length(seq_eps)), dimnames = list(clusters, seq_eps))
-clus_xi2b  = array(NA, dim = c(length(clusters), length(seq_eps)), dimnames = list(clusters, seq_eps))
-clus_xi2C  = array(NA, dim = c(length(clusters), length(seq_eps), length(seq_gal)), dimnames = list(clusters, seq_eps, seq_gal))
+clus_chi2g0 = array(NA, dim = c(length(clusters), length(seq_eps)), dimnames = list(clusters, seq_eps))
+clus_chi2A  = array(NA, dim = c(length(clusters), length(seq_eps)), dimnames = list(clusters, seq_eps))
+clus_chi2B  = array(NA, dim = c(length(clusters), length(seq_eps)), dimnames = list(clusters, seq_eps))
+clus_chi2b  = array(NA, dim = c(length(clusters), length(seq_eps)), dimnames = list(clusters, seq_eps))
+clus_chi2C  = array(NA, dim = c(length(clusters), length(seq_eps), length(seq_gal)), dimnames = list(clusters, seq_eps, seq_gal))
 
 gempty_space = pi / 3
 g_galaxy     = 0.49 * pi
@@ -110,10 +110,10 @@ for (ieps in 1:length(seq_eps))
   for (iclu in 1:length(clusters))
   {
     lgclus = rar$Name == clusters[iclu]
-    clus_xi2g0[iclu, ieps] = sum((1 / gamma_0B[lgclus] - diff_accel[lgclus])^2 / diff_accel_err[lgclus]^2)
-    clus_xi2A[iclu, ieps]  = sum((pred_accelA[lgclus] - quot_accel[lgclus])^2 / quot_accel_err[lgclus]^2)
-    clus_xi2B[iclu, ieps]  = sum((pred_accelB[lgclus] - quot_accel[lgclus])^2 / quot_accel_err[lgclus]^2)
-    clus_xi2b[iclu, ieps]  = sum((pred_accelb[lgclus] - quot_accel[lgclus])^2 / quot_accel_err[lgclus]^2)
+    clus_chi2g0[iclu, ieps] = sum((1 / gamma_0B[lgclus] - diff_accel[lgclus])^2 / diff_accel_err[lgclus]^2)
+    clus_chi2A[iclu, ieps]  = sum((pred_accelA[lgclus] - quot_accel[lgclus])^2 / quot_accel_err[lgclus]^2)
+    clus_chi2B[iclu, ieps]  = sum((pred_accelB[lgclus] - quot_accel[lgclus])^2 / quot_accel_err[lgclus]^2)
+    clus_chi2b[iclu, ieps]  = sum((pred_accelb[lgclus] - quot_accel[lgclus])^2 / quot_accel_err[lgclus]^2)
   }
 
   for (igal in 1:length(seq_gal))
@@ -126,11 +126,11 @@ for (ieps in 1:length(seq_eps))
     for (iclu in 1:length(clusters))
     {
       lgclus = rar$Name == clusters[iclu]
-      clus_xi2C[iclu, ieps, igal] = sum((pred_accelC[lgclus] - quot_accel[lgclus])^2 / quot_accel_err[lgclus]^2)
+      clus_chi2C[iclu, ieps, igal] = sum((pred_accelC[lgclus] - quot_accel[lgclus])^2 / quot_accel_err[lgclus]^2)
     }
   }
 }
-clus_xi2C[clus_xi2C > 500] = 500
+clus_chi2C[clus_chi2C > 500] = 500
 
 # Points per cluster and chi-square confidence thresholds.
 rar.num = rep(NA, length(clusters))
@@ -175,13 +175,13 @@ clus_vevH2 = array(NA, dim = c(length(clusters), 3), dimnames = list(clusters, c
       {
         rv = order(1 / seq_eps)
         u_seq_eps = rev(1 / seq_eps)
-        image(u_seq_eps, seq_gal, clus_xi2C[iclu, rv, ] / p95[iclu], col = hcl.colors(100, "terrain"), ylim = c(0.407, 0.501), xlim = c(0.0, 0.062), zlim = c(0, 1), axes = FALSE)
-        contour(u_seq_eps, seq_gal, clus_xi2C[iclu, rv, ], levels = c(p67[iclu], p95[iclu]), labels = c("67%", "95%"), add = T)
-        contour(u_seq_eps, seq_gal, clus_xi2C[iclu, rv, ], levels = c(p99[iclu]), labels = c(""), lty = 2, add = T)
+        image(u_seq_eps, seq_gal, clus_chi2C[iclu, rv, ] / p95[iclu], col = hcl.colors(100, "terrain"), ylim = c(0.407, 0.501), xlim = c(0.0, 0.062), zlim = c(0, 1), axes = FALSE)
+        contour(u_seq_eps, seq_gal, clus_chi2C[iclu, rv, ], levels = c(p67[iclu], p95[iclu]), labels = c("67%", "95%"), add = T)
+        contour(u_seq_eps, seq_gal, clus_chi2C[iclu, rv, ], levels = c(p99[iclu]), labels = c(""), lty = 2, add = T)
         if (iclu == 3)
-          contour(u_seq_eps, seq_gal, clus_xi2C[iclu, rv, ], levels = c(200), labels = c(""), lty = 2, add = T)
-        points(u_seq_eps[order(apply(clus_xi2C[iclu, rv, ], 1, min))[1]],
-               seq_gal[order(apply(clus_xi2C[iclu, rv, ], 2, min))[1]], pch = 20, cex = 2, col = "red")
+          contour(u_seq_eps, seq_gal, clus_chi2C[iclu, rv, ], levels = c(200), labels = c(""), lty = 2, add = T)
+        points(u_seq_eps[order(apply(clus_chi2C[iclu, rv, ], 1, min))[1]],
+               seq_gal[order(apply(clus_chi2C[iclu, rv, ], 2, min))[1]], pch = 20, cex = 2, col = "red")
         text(1 / 63, 0.412, clusters[iclu])
         abline(h = seq(0.4, 0.5, 0.02), lty = 2, col = "gray92")
         abline(v = seq(0, 0.1, 0.02), lty = 2, col = "gray92")
@@ -208,15 +208,15 @@ clus_vevH2 = array(NA, dim = c(length(clusters), 3), dimnames = list(clusters, c
     clus_col = rainbow(length(clusters))
     par(fig = c(0.61, 0.95, 0.45, 1), mar = c(0, 0, 0, 0), oma = c(3, 1, 2, 3.4), new = TRUE)
     {
-      clus_xi2 = clus_xi2b
-      plot(u_seq_eps, pchisq(clus_xi2[1, rv], rar.num[1] - 1), ylim = c(0, 1), xlim = c(0.005, 0.2), log = "x", axes = FALSE, typ = "l", lwd = 2, col = "white")
+      clus_chi2 = clus_chi2b
+      plot(xlab = "", ylab = "", u_seq_eps, pchisq(clus_chi2[1, rv], rar.num[1] - 1), ylim = c(0, 1), xlim = c(0.005, 0.2), log = "x", axes = FALSE, typ = "l", lwd = 2, col = "white")
       for (iclu in 1:10)
       {
-        xi2_norm = pchisq(clus_xi2[iclu, rv], rar.num[iclu] - 1)
+        xi2_norm = pchisq(clus_chi2[iclu, rv], rar.num[iclu] - 1)
         lines(u_seq_eps, xi2_norm, lwd = 0.8, lty = 2, col = clus_col[iclu])
         points(u_seq_eps[order(xi2_norm)[1]], min(xi2_norm, na.rm = T), pch = 20, cex = 3, col = clus_col[iclu])
         if (iclu == 3)
-          points(u_seq_eps[order(clus_xi2[iclu, ])[1]], 1, pch = 20, cex = 3, col = clus_col[iclu])
+          points(u_seq_eps[order(clus_chi2[iclu, ])[1]], 1, pch = 20, cex = 3, col = clus_col[iclu])
       }
       abline(v = 1 / c(1, 2, 5, 10, 20, 50, 100, 200), lty = 2, col = "gray92")
       abline(h = seq(0, 1, 0.1), lty = 2, col = "gray92")
@@ -229,7 +229,7 @@ clus_vevH2 = array(NA, dim = c(length(clusters), 3), dimnames = list(clusters, c
     }
 
     par(fig = c(0.1, 0.615, 0, 0.35), mar = c(0, 0, 0, 0), oma = c(3.5, 3.5, 2, 2), new = TRUE)
-    image.plot(seq_eps, seq_gal, clus_xi2C[iclu, , ] / p95[iclu], col = hcl.colors(100, "terrain"), legend.only = TRUE, ylim = c(0.407, 0.501), xlim = c(5, 200), zlim = c(0, 1), axes = FALSE)
+    image.plot(seq_eps, seq_gal, clus_chi2C[iclu, , ] / p95[iclu], col = hcl.colors(100, "terrain"), legend.only = TRUE, ylim = c(0.407, 0.501), xlim = c(5, 200), zlim = c(0, 1), axes = FALSE)
     par(fig = c(0.42, 0.575, 0, 0.30), mar = c(0, 0, 0, 0), oma = c(3.5, 3.5, 2, 2), new = TRUE)
     plot.new()
     mtext(side = 4, expression(paste(chi^2, " p-value")), line = 1.6)

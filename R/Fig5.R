@@ -15,19 +15,19 @@
 # -----------------------------------------------------------------------------
 for (iclu in 1:10)
 {
-  eps_clusA[iclu, 1]   = seq_eps[order(clus_xi2A[iclu, ])[1]]
-  eps_clusA[iclu, 2:3] = range(seq_eps[clus_xi2A[iclu, ] < p95[iclu]])
-  eps_clusB[iclu, 1]   = seq_eps[order(clus_xi2B[iclu, ])[1]]
-  eps_clusB[iclu, 2:3] = range(seq_eps[clus_xi2B[iclu, ] < p95[iclu]])
-  eps_clusb[iclu, 1]   = seq_eps[order(clus_xi2b[iclu, ])[1]]
-  eps_clusb[iclu, 2:3] = range(seq_eps[clus_xi2b[iclu, ] < p95[iclu]])
+  eps_clusA[iclu, 1]   = seq_eps[order(clus_chi2A[iclu, ])[1]]
+  eps_clusA[iclu, 2:3] = range(seq_eps[clus_chi2A[iclu, ] < p95[iclu]])
+  eps_clusB[iclu, 1]   = seq_eps[order(clus_chi2B[iclu, ])[1]]
+  eps_clusB[iclu, 2:3] = range(seq_eps[clus_chi2B[iclu, ] < p95[iclu]])
+  eps_clusb[iclu, 1]   = seq_eps[order(clus_chi2b[iclu, ])[1]]
+  eps_clusb[iclu, 2:3] = range(seq_eps[clus_chi2b[iclu, ] < p95[iclu]])
 
-  best_gal_C = order(apply(clus_xi2C[iclu, , ], 2, min))[1]
-  best_eps_C = order(apply(clus_xi2C[iclu, , ], 1, min))[1]
-  eps_clusC[iclu, 1]   = seq_eps[order(clus_xi2C[iclu, , best_gal_C])[1]]
-  eps_clusC[iclu, 2:3] = range(seq_eps[clus_xi2C[iclu, , best_gal_C] < p67[iclu]])
-  gal_clusC[iclu, 1]   = seq_gal[order(clus_xi2C[iclu, best_eps_C, ])[1]]
-  gal_clusC[iclu, 2:3] = range(seq_gal[clus_xi2C[iclu, best_eps_C, ] < p67[iclu]])
+  best_gal_C = order(apply(clus_chi2C[iclu, , ], 2, min))[1]
+  best_eps_C = order(apply(clus_chi2C[iclu, , ], 1, min))[1]
+  eps_clusC[iclu, 1]   = seq_eps[order(clus_chi2C[iclu, , best_gal_C])[1]]
+  eps_clusC[iclu, 2:3] = range(seq_eps[clus_chi2C[iclu, , best_gal_C] < p67[iclu]])
+  gal_clusC[iclu, 1]   = seq_gal[order(clus_chi2C[iclu, best_eps_C, ])[1]]
+  gal_clusC[iclu, 2:3] = range(seq_gal[clus_chi2C[iclu, best_eps_C, ] < p67[iclu]])
 
   clus_z[iclu]       = max(rar$z[rar$Name == clusters[iclu]])
   clus_mass[iclu]    = max(rar.mass[rar$Name == clusters[iclu]])
@@ -45,15 +45,15 @@ for (iclu in 1:10)
 # -----------------------------------------------------------------------------
 # Table 1 - one-parameter (general) and two-parameter (cluster) fits per cluster.
 # -----------------------------------------------------------------------------
-table_clusB = cbind(eps_clusB, round(pchisq(apply(clus_xi2B[, ], 1, min), rar.num - 1), 2))
+table_clusB = cbind(eps_clusB, round(pchisq(apply(clus_chi2B[, ], 1, min), rar.num - 1), 2))
 colnames(table_clusB) = c("eps_med", "eps_low", "eps_upp", "p_value")
 write.table(table_clusB, "outputs/Table1_general_model.txt", quote = FALSE)
 
-table_clusb = cbind(eps_clusb, round(pchisq(apply(clus_xi2b[, ], 1, min), rar.num - 1), 2))
+table_clusb = cbind(eps_clusb, round(pchisq(apply(clus_chi2b[, ], 1, min), rar.num - 1), 2))
 colnames(table_clusb) = c("eps_med", "eps_low", "eps_upp", "p_value")
 write.table(table_clusb, "outputs/Suppl_table_general_model_variant.txt", quote = FALSE)
 
-table_clusC = cbind(eps_clusC, round(gal_clusC, 3), round(pchisq(apply(clus_xi2C[, , ], 1, min), rar.num - 1), 2))
+table_clusC = cbind(eps_clusC, round(gal_clusC, 3), round(pchisq(apply(clus_chi2C[, , ], 1, min), rar.num - 1), 2))
 colnames(table_clusC) = c("eps_med", "eps_low", "eps_upp", "ggal_med", "ggal_low", "ggal_upp", "p_value")
 write.table(table_clusC, "outputs/Table1_cluster_model.txt", quote = FALSE)
 
@@ -72,18 +72,18 @@ write.table(table_clusC, "outputs/Table1_cluster_model.txt", quote = FALSE)
     par(fig = c(0, 0.48, 0.1, 1), oma = c(5.9, 3, 0.5, 3), mar = c(0, 0, 0, 0), new = TRUE)
 
     # ---- One-parameter model: galaxies and clusters ----
-    smcGa07.VO = aggregate(smcGa07.V, by = list(namess), mean, na.rm = T)
-    galeps_k_err  = apply(cbind(galeps_0.47, galeps_0.48, galeps_k), 1, sd) / sqrt(2)
-    gammagc_k_err = apply(cbind(0.47 * pi, 0.48 * pi, gammagc_k), 1, sd) / 2
+    mcgaugh.VO = aggregate(mcgaugh.V, by = list(gal_name_row), mean, na.rm = T)
+    galaxy_eps_k_err  = apply(cbind(galaxy_eps_0.47, galaxy_eps_0.48, galaxy_eps_k), 1, sd) / sqrt(2)
+    gamma_cen_k_err = apply(cbind(0.47 * pi, 0.48 * pi, gamma_cen_k), 1, sd) / 2
 
     xlab = expression(paste(sqrt(rho[typ] / rho[vac])))
     ylab = expression(paste(epsilon[H]))
 
-    x0 = sqrt(smcGa07.mass / (4 / 3 * pi * (smcGa07.R$x * kpc * 4)^3) / (3 / (8 * pi * GN * T0^2)))
-    plot(x0, galeps_0.48 - 5 / 6, lwd = 1.5, xlab = xlab, ylab = ylab, xlim = c(3, 180), ylim = c(3, 180), log = "xy", pch = 0, axes = FALSE,
-         col = rainbow(length(namesg))[order(smcGa07.VO$x, decreasing = TRUE)[-55]])
-    segments(x0, galeps_0.48 - galeps_k_err, x0, galeps_0.48 + galeps_k_err,
-             col = rainbow(length(namesg))[order(smcGa07.VO$x, decreasing = TRUE)[-55]])
+    x0 = sqrt(mcgaugh.mass / (4 / 3 * pi * (mcgaugh.R$x * kpc * 4)^3) / (3 / (8 * pi * GN * T0^2)))
+    plot(x0, galaxy_eps_0.48 - 5 / 6, lwd = 1.5, xlab = xlab, ylab = ylab, xlim = c(3, 180), ylim = c(3, 180), log = "xy", pch = 0, axes = FALSE,
+         col = rainbow(length(gal_counts))[order(mcgaugh.VO$x, decreasing = TRUE)[-55]])
+    segments(x0, galaxy_eps_0.48 - galaxy_eps_k_err, x0, galaxy_eps_0.48 + galaxy_eps_k_err,
+             col = rainbow(length(gal_counts))[order(mcgaugh.VO$x, decreasing = TRUE)[-55]])
 
     x0 = sqrt(clus_massmin / (4 / 3 * pi * ((clus_radmin)^3)) / (3 / (8 * pi * GN * (1 + clus_z)^(-1) * T0^2)))
     points(x0, eps_clusB[, 1], pch = 20, cex = 1.5, col = rainbow(length(clusters)))
@@ -106,15 +106,15 @@ write.table(table_clusC, "outputs/Table1_cluster_model.txt", quote = FALSE)
     xlab = expression(paste(log(1 / epsilon[H])))
     ylab = expression(paste(cos(gamma[cen])))
 
-    x0 = -log(galeps_k)[namesg > 1] - abs(seq(0, 0.05, length.out = sum(namesg > 1)))
-    xer1 = -log(galeps_k * 0.3)[namesg > 1]
+    x0 = -log(galaxy_eps_k)[gal_counts > 1] - abs(seq(0, 0.05, length.out = sum(gal_counts > 1)))
+    xer1 = -log(galaxy_eps_k * 0.3)[gal_counts > 1]
     xer1[is.na(xer1)] = x0
-    plot(x0, cos(gammagc_k)[namesg > 1], pch = 0, xlab = xlab, ylab = ylab, axes = FALSE, ylim = c(0, 0.16),
-         col = rainbow(length(namesg))[order(smcGa07.VO$x, decreasing = TRUE)[-55]], lwd = 1.5)
-    segments(xer1, cos(gammagc_k)[namesg > 1], -log(galeps_k + galeps_k_err / 2)[namesg > 1], cos(gammagc_k)[namesg > 1],
-             col = rainbow(length(namesg))[order(smcGa07.VO$x, decreasing = TRUE)[-55]])
-    segments(x0, cos(gammagc_k - gammagc_k_err)[namesg > 1], x0, cos(gammagc_k + gammagc_k_err)[namesg > 1],
-             col = rainbow(length(namesg))[order(smcGa07.VO$x, decreasing = TRUE)[-55]])
+    plot(x0, cos(gamma_cen_k)[gal_counts > 1], pch = 0, xlab = xlab, ylab = ylab, axes = FALSE, ylim = c(0, 0.16),
+         col = rainbow(length(gal_counts))[order(mcgaugh.VO$x, decreasing = TRUE)[-55]], lwd = 1.5)
+    segments(xer1, cos(gamma_cen_k)[gal_counts > 1], -log(galaxy_eps_k + galaxy_eps_k_err / 2)[gal_counts > 1], cos(gamma_cen_k)[gal_counts > 1],
+             col = rainbow(length(gal_counts))[order(mcgaugh.VO$x, decreasing = TRUE)[-55]])
+    segments(x0, cos(gamma_cen_k - gamma_cen_k_err)[gal_counts > 1], x0, cos(gamma_cen_k + gamma_cen_k_err)[gal_counts > 1],
+             col = rainbow(length(gal_counts))[order(mcgaugh.VO$x, decreasing = TRUE)[-55]])
     box()
     abline(a = cos(0.46 * pi), b = 0.02)
 
@@ -132,7 +132,7 @@ write.table(table_clusC, "outputs/Table1_cluster_model.txt", quote = FALSE)
     par(fig = c(0, 1, 0, 0.181), mar = c(0, 0, 0, 0), oma = c(0.01, 0.1, 1, 0.1), new = TRUE)
     plot.new()
     legend("bottomleft", legend = clusters, pch = 20, col = clus_col, ncol = 2, pt.cex = cex0 * 0.61, cex = cex0 * 0.45, bty = "n")
-    legend("bottomright", legend = names(namesG)[order(smcGa07.VO$x, decreasing = TRUE)[-55]], pch = 0, col = rainbow(length(namesg))[-55], ncol = 10, pt.cex = cex0 * 0.48, cex = cex0 * 0.365, bty = "n")
+    legend("bottomright", legend = names(gal_names_up)[order(mcgaugh.VO$x, decreasing = TRUE)[-55]], pch = 0, col = rainbow(length(gal_counts))[-55], ncol = 10, pt.cex = cex0 * 0.48, cex = cex0 * 0.365, bty = "n")
 
     par(fig = c(0, 1, 0, 0.225), mar = c(0, 0, 0, 0), oma = c(0, 0.1, 0, 0.45), new = T)
     plot.new()
