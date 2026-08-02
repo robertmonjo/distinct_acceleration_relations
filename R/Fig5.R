@@ -17,15 +17,15 @@
 # number of data points). A cluster whose best fit already exceeds that
 # threshold fails the chi-square test (p-value > 0.95); no grid point qualifies
 # and the classical range() would return (Inf, -Inf). For those cases a mixed
-# criterion is applied instead: the error bars are rescaled by the reduced
-# chi-square of the best fit (standard error inflation for a poor fit), which
-# yields a finite interval,  chi2 < min(chi2) * (1 + qchisq(0.90, 1) / dof).
+# criterion is applied instead: the chi-square is rescaled so that the best fit
+# has a reduced chi-square of one (standard error inflation for a poor fit) and
+# the same absolute threshold is applied,  chi2 < thr * min(chi2) / dof.
 conf_interval <- function(chi2, grid, thr, dof)
 {
   below <- chi2 < thr
   if (any(below, na.rm = TRUE)) return(range(grid[below]))
   chi2_min <- min(chi2, na.rm = TRUE)
-  range(grid[chi2 < chi2_min * (1 + qchisq(0.90, 1) / dof)])
+  range(grid[chi2 < thr * chi2_min / dof])
 }
 
 # -----------------------------------------------------------------------------
