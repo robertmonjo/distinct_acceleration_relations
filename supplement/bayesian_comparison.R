@@ -147,6 +147,33 @@ s_centred <- (rho_ratio_clu_s1 / (eps_fit^2 - 1/6))^(1/3)
 clu_tab <- data.frame(cluster = clusters, eps_fit = round(eps_fit,1),
                       s_centred = round(s_centred,2))
 
+# --- Full-SPARC cross-check: why the high-quality sample is required -----------
+# With a single fixed stellar M/L (0.5 disk, 0.7 bulge) the SPARC mass models
+# (Lelli et al. 2016) are fit by neither model (chi2_nu >> 1); per-galaxy M/L
+# fitting would be needed there. This documents the "chi2_nu of 20 to 34" statement.
+sparc_nu <- tryCatch({
+  Lm  <- readLines("data/MassModels_Lelli2016c.mrt.txt")
+  col <- function(a, b) suppressWarnings(as.numeric(substr(Lm, a, b)))
+  ID <- trimws(substr(Lm, 1, 11)); Rk <- col(20,25); Vo <- col(27,32); eV <- col(34,38)
+  Vg <- col(40,45); Vd <- col(47,52); Vb <- col(54,59)
+  ok <- is.finite(Rk) & is.finite(Vo) & Vo > 0 & is.finite(Vg) & is.finite(Vd)
+  ID<-ID[ok];Rk<-Rk[ok];Vo<-Vo[ok];eV<-eV[ok];Vg<-Vg[ok];Vd<-Vd[ok]
+  Vb<-ifelse(is.finite(Vb[ok]),Vb[ok],0)
+  Vbar <- sqrt(Vg^2 + 0.5*Vd^2 + 0.7*Vb^2); kp <- Vbar > 0
+  ID<-ID[kp];Rk<-Rk[kp];Vo<-Vo[kp];eV<-eV[kp];Vbar<-Vbar[kp]
+  sig <- pmax(eV, 3); aNs <- Vbar^2/(Rk*kpc)*kms^2; gl <- unique(ID)
+  rr1 <- sapply(gl, function(g){ i<-ID==g; VN<-max(Vbar[i]); Rs<-max(Rk[i])
+    (VN^2*Rs*kpc*kms^2/GN)/(4/3*pi*(Rs*kpc)^3)/rho_vac })
+  Dh <- function(eH){ vh<-(sqrt(2)*Vbar*kms*T0)/(Rk*kpc); e<-eH[match(ID,gl)]
+    q<-abs(vh^2-e^2)/(e^2+vh^2)
+    g<-asin(sqrt(pmin(pmax(sin(gamma_U)^2+(sin(gamma_cen)^2-sin(gamma_U)^2)*q,0),1)))
+    sqrt(1+(2*c0/T0)/(aNs*g/cos(g))) }
+  sgr <- seq(1,30,0.1)
+  ch  <- sapply(sgr, function(s){ eH<-sqrt(pmax(rr1/s^3+1/6,1e-6)); sum(((Vbar*sqrt(Dh(eH))-Vo)/sig)^2) })
+  chm <- sum(((Vbar*sqrt(0.5+sqrt(0.25+a0/aNs))-Vo)/sig)^2); Ns <- length(Vo)
+  c(hmg = min(ch)/(Ns-1), mond = chm/Ns, ng = length(gl), N = Ns)
+}, error = function(e) c(hmg=NA, mond=NA, ng=NA, N=NA))
+
 # --- Report -------------------------------------------------------------------
 sink("outputs/Suppl_bayesian_comparison.txt")
 cat("Bayesian comparison of HMG and MOND on galaxy rotation curves\n")
@@ -163,5 +190,8 @@ cat(sprintf("\nCLUSTERS  (%d clusters, %d RAR points): per-cluster scale s for t
 print(clu_tab, row.names = FALSE)
 cat(sprintf("\ns: median = %.2f, range %.2f - %.2f  (galaxies: global best-fit s = %.2f)\n",
             median(s_centred), min(s_centred), max(s_centred), s_best))
+cat(sprintf("\nFULL-SPARC cross-check (%d gal, fixed M/L 0.5/0.7): chi2_nu = %.0f (HMG global-s), %.0f (MOND)\n",
+            sparc_nu["ng"], sparc_nu["hmg"], sparc_nu["mond"]))
+cat("  -> fixed baryons unusable on the full sample (chi2_nu >> 1); the high-quality sample is required.\n")
 sink()
 cat(readLines("outputs/Suppl_bayesian_comparison.txt"), sep = "\n")
