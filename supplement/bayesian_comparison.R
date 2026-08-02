@@ -12,8 +12,8 @@
 # and reports, for the ten clusters, the per-cluster scale s that places each on
 # the density relation. Baryons are identical for every model (no M/L fitting).
 #
-# Output: outputs/Suppl_parameter_economy.txt
-# Usage:  Rscript supplement/parameter_economy.R
+# Output: outputs/Suppl_bayesian_comparison.txt
+# Usage:  Rscript supplement/bayesian_comparison.R
 # =============================================================================
 .args <- commandArgs(trailingOnly = FALSE)
 .file <- sub("^--file=", "", .args[grep("^--file=", .args)])
@@ -114,7 +114,7 @@ clu_tab <- data.frame(cluster = clusters, eps_fit = round(eps_fit,1),
                       s_centred = round(s_centred,2))
 
 # --- Report -------------------------------------------------------------------
-sink("outputs/Suppl_parameter_economy.txt")
+sink("outputs/Suppl_bayesian_comparison.txt")
 cat("Parameter economy of the HMG general model\n")
 cat("eps_H^2 = rho_nei(s)/rho_vac + 1/6   (Monjo 2026, MNRAS 549, Eq. 4)\n\n")
 cat(sprintf("GALAXIES  (McGaugh 2007: %d galaxies, %d rotation-curve points)\n", used, N))
@@ -128,4 +128,4 @@ print(clu_tab, row.names = FALSE)
 cat(sprintf("\ns: median = %.2f, range %.2f - %.2f  (galaxies use s = 4)\n",
             median(s_centred), min(s_centred), max(s_centred)))
 sink()
-cat(readLines("outputs/Suppl_parameter_economy.txt"), sep = "\n")
+cat(readLines("outputs/Suppl_bayesian_comparison.txt"), sep = "\n")
